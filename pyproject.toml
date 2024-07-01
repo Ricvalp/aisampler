@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[tool.setuptools]
+py-modules = ["aisampler"]
+
+
+[project]
+name = "aisampler"
+version = "0.1.0"
+description = "Ai-sampler: adversarial learning of Markov chains"
+authors = [{name = "Riccardo Valperga", email = "r.valperga@uva.nl"}]
+license = {text = "MIT License"}
+requires-python = ">= 3.10"
+dependencies = ["flax", "optax", "ml_collections", "tqdm", "matplotlib", "wandb"]
+
+[project.urls]
+homepage = "https://github.com/Ricvalp/aisampler"
+documentation = "https://github.com/Ricvalp/aisampler"
+source = "https://github.com/Ricvalp/aisampler"
+bug-reports = "https://github.com/Ricvalp/aisampler"
