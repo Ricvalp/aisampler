@@ -39,7 +39,7 @@ def get_config(mode: Literal["train", "sample"] = None):
 
     # Wandb
     cfg.wandb = ConfigDict()
-    cfg.wandb.use = True
+    cfg.wandb.use = False
     cfg.wandb.project = "adversarial-involutive-sampler-debug"
     cfg.wandb.entity = "ricvalp"
 

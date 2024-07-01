@@ -1,4 +1,4 @@
-from logistic_regression.densities import (
+from aisampler.logistic_regression.densities import (
     generate_dataset,
     get_predictions,
     grad_U,
@@ -7,17 +7,17 @@ from logistic_regression.densities import (
     plot_density_logistic_regression,
     plot_gradients_logistic_regression_density,
 )
-from logistic_regression.utils import (
+from aisampler.logistic_regression.utils import (
     plot_histograms2d_logistic_regression,
     plot_histograms_logistic_regression,
     plot_logistic_regression_samples,
     plot_first_kernel_iteration,
 )
-from logistic_regression.heart import Heart
-from logistic_regression.german import German
-from logistic_regression.australian import Australian
+from aisampler.logistic_regression.heart import Heart
+from aisampler.logistic_regression.german import German
+from aisampler.logistic_regression.australian import Australian
 
-from logistic_regression.statistics import (
+from aisampler.logistic_regression.statistics import (
     statistics_german,
     statistics_heart,
     statistics_australian,

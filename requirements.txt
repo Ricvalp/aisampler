@@ -1,0 +1,10 @@
+seaborn
+matplotlib
+absl
+ml_collections
+
+jax["cuda12"]
+torch["cpu"]
+
+optax
+flax

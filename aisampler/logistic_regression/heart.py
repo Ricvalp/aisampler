@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from logistic_regression.logistic_regression import BayesianLogisticRegression
+from aisampler.logistic_regression.logistic_regression import BayesianLogisticRegression
 
 
 class Heart(BayesianLogisticRegression):

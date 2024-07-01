@@ -86,9 +86,9 @@ def metropolis_hastings_with_momentum(
     t = time.time() - time_start
     logging.info(f"Sampling done. Time taken: {t}")
 
-    return jnp.transpose(jnp.array(samples), (1, 0, 2)), jnp.array(ars).mean(), t
+    # return jnp.transpose(jnp.array(samples), (1, 0, 2)), jnp.array(ars).mean() # , t
 
-    # return jnp.vstack(samples), jnp.array(ars).mean(), t
+    return jnp.vstack(samples), jnp.array(ars).mean()  # , t
 
 
 @jax.jit

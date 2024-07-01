@@ -1,4 +1,11 @@
-from sampling.hamiltonian_monte_carlo import hmc
-from sampling.metrics import ess, gelman_rubin_r, effective_sample_size
-from sampling.metropolis_hastings_with_momentum import metropolis_hastings_with_momentum
-from sampling.utils import plot_samples, plot_samples_with_density, plot_chain, plot_kde
+from aisampler.sampling.hamiltonian_monte_carlo import hmc
+from aisampler.sampling.metrics import ess, gelman_rubin_r, effective_sample_size
+from aisampler.sampling.metropolis_hastings_with_momentum import (
+    metropolis_hastings_with_momentum,
+)
+from aisampler.sampling.utils import (
+    plot_samples,
+    plot_samples_with_density,
+    plot_chain,
+    plot_kde,
+)

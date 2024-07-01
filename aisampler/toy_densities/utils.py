@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def plot_density(density, xlim, ylim, n=100, name=None):
@@ -49,22 +50,20 @@ def plot_hamiltonian_density(
     Z_p = jnp.exp(-density(z_p)).reshape((n, n))
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-
-    # Contour plot for Z_q
-    contour_q = ax[0].contourf(X_q, Y_q, Z_q, cmap="Reds")
+    im_q = ax[0].imshow(
+        Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
+    )
     ax[0].set_title("q")
     ax[0].set_xlabel("q1")
     ax[0].set_ylabel("q2")
-    fig.colorbar(contour_q, ax=ax[0])
-
-    # Contour plot for Z_p
-    contour_p = ax[1].contourf(X_p, Y_p, Z_p, cmap="Reds")
+    fig.colorbar(im_q, ax=ax[0])
+    im_p = ax[1].imshow(
+        Z_p, extent=(-xlim_p, xlim_p, -ylim_p, ylim_p), origin="lower", cmap="viridis"
+    )
     ax[1].set_title("p")
     ax[1].set_xlabel("p1")
     ax[1].set_ylabel("p2")
-    fig.colorbar(contour_p, ax=ax[1])
-
-    plt.tight_layout()
+    fig.colorbar(im_p, ax=ax[1])
 
     if name is not None:
         plt.savefig(name)
@@ -73,7 +72,8 @@ def plot_hamiltonian_density(
 
 
 def plot_hamiltonian_density_only_q(density, xlim_q, ylim_q, n=100, name=None):
-
+    # sns.set_context("paper", font_scale=1.5)
+    # color_palette = sns.color_palette('crest')
     x = jnp.linspace(-xlim_q, xlim_q, n)
     y = jnp.linspace(-ylim_q, ylim_q, n)
     X_q, Y_q = jnp.meshgrid(x, y)
@@ -88,16 +88,14 @@ def plot_hamiltonian_density_only_q(density, xlim_q, ylim_q, n=100, name=None):
     )
     Z_q = jnp.exp(-density(z_q)).reshape((n, n))
 
-    fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-
-    ax.contourf(
-        X_q, Y_q, Z_q * (Z_q > 1e-10), cmap="viridis", shade_lowest=True
-    )  # "Reds")
-    ax.tick_params(axis="x", labelsize=25)
-    ax.tick_params(axis="y", labelsize=25)
-
-    plt.tight_layout()
-
+    fig = plt.figure(figsize=(5, 5))
+    im_q = plt.imshow(
+        Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
+    )
+    # plt.xlabel(r'$q_1$', fontsize=20)
+    # plt.ylabel(r'$q_2$', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
     if name is not None:
         plt.savefig(name)
     plt.show()

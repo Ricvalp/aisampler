@@ -13,12 +13,15 @@ from flax.training.train_state import TrainState
 from torch.utils.data import DataLoader
 
 import wandb
-from discriminators import create_simple_discriminator, log_plot
-from sampling import metropolis_hastings_with_momentum, plot_samples_with_density
-from trainer.utils import SamplesDataset, numpy_collate
-from sampling.metrics import ess, gelman_rubin_r
+from aisampler.discriminators import create_simple_discriminator, log_plot
+from aisampler.sampling import (
+    metropolis_hastings_with_momentum,
+    plot_samples_with_density,
+)
+from aisampler.trainer.utils import SamplesDataset, numpy_collate
+from aisampler.sampling.metrics import ess, gelman_rubin_r
 
-from logistic_regression import (
+from aisampler.logistic_regression import (
     plot_logistic_regression_samples,
     plot_histograms_logistic_regression,
     plot_histograms2d_logistic_regression,
@@ -207,7 +210,6 @@ class Trainer:
             q_0=0.0,
             q_1=0.0,
             name=name,
-            s=0.5,
             c="red",
             alpha=0.05,
             ar=ar,
@@ -223,7 +225,7 @@ class Trainer:
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = orbax_utils.save_args_from_target(ckpt)
         orbax_checkpointer.save(
-            os.path.join(self.checkpoint_path, f"{epoch}_{step}"),
+            (Path(self.checkpoint_path) / f"{epoch}_{step}").absolute(),
             ckpt,
             save_args=save_args,
         )

@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 import flax.linen as nn
-from kernels import create_henon_flow
+from aisampler.kernels import create_henon_flow
 
 
 class Discriminator(nn.Module):

@@ -3,11 +3,12 @@ from ml_collections import config_flags
 
 import aisampler.toy_densities as densities
 import wandb
-from experiments.config import load_cfgs
 from aisampler.trainer import Trainer
 
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/train_toy_density.py"
+)
 
 
 def load_cfgs(
@@ -24,7 +25,6 @@ def main(_):
     cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     if cfg.wandb.use:
-        # os.environ["WANDB_SILENT"] = "true"
         wandb.init(project=cfg.wandb.project, entity=cfg.wandb.entity, config=cfg)
 
     density = getattr(densities, cfg.target_density.name)
