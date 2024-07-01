@@ -24,6 +24,7 @@ from sampling.metrics import effective_sample_size, ess, gelman_rubin_r
 
 _TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
 
+
 def load_cfgs(
     _TASK_FILE,
 ):
@@ -37,7 +38,9 @@ def main(_):
     cfg.figure_path.mkdir(parents=True, exist_ok=True)
 
     density = getattr(densities, cfg.target_density.name)
-    density_statistics = getattr(densities, "statistics_" + cfg.hmc.potential_function_name)
+    density_statistics = getattr(
+        densities, "statistics_" + cfg.hmc.potential_function_name
+    )
 
     checkpoint_path = os.path.join(
         os.path.join(cfg.checkpoint_dir, cfg.target_density.name), cfg.checkpoint_name
@@ -110,22 +113,20 @@ def main(_):
     #     linewidth=1.5,
     # )
 
-    plot_kde(
-        samples,
-        name=cfg.figure_path / Path(f"kde_ring.png"))
+    plot_kde(samples, name=cfg.figure_path / Path(f"kde_ring.png"))
 
     assert True
 
-        # plot_chain(
-        #     samples[:100],
-        #     target_density=density,
-        #     q_0=0.0,
-        #     q_1=0.0,
-        #     name=cfg.figure_path / Path(f"samples_{i}.png"),
-        #     ar=ar,
-        #     c="red",
-        #     linewidth=0.5,
-        # )
+    # plot_chain(
+    #     samples[:100],
+    #     target_density=density,
+    #     q_0=0.0,
+    #     q_1=0.0,
+    #     name=cfg.figure_path / Path(f"samples_{i}.png"),
+    #     ar=ar,
+    #     c="red",
+    #     linewidth=0.5,
+    # )
 
     #     chains.append(samples)
 

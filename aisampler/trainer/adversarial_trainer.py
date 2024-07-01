@@ -23,7 +23,7 @@ from logistic_regression import (
     plot_histograms_logistic_regression,
     plot_histograms2d_logistic_regression,
     plot_first_kernel_iteration,
-    )
+)
 
 
 class Trainer:
@@ -95,7 +95,9 @@ class Trainer:
         self.maximize_AR_step = jax.jit(maximize_AR_step)
 
         def minimize_adversarial_loss_step(L_state, D_state, batch):
-            my_loss = lambda phi_params: adversarial_loss(phi_params, D_state, L_state, batch)
+            my_loss = lambda phi_params: adversarial_loss(
+                phi_params, D_state, L_state, batch
+            )
             adv_loss, grads = jax.value_and_grad(my_loss, has_aux=False)(D_state.params)
             D_state = D_state.apply_gradients(grads=grads)
 
@@ -116,7 +118,10 @@ class Trainer:
 
         dataset = SamplesDataset(np.array(samples))
         self.data_loader = DataLoader(
-            dataset, batch_size=self.cfg.train.batch_size, shuffle=True, collate_fn=numpy_collate
+            dataset,
+            batch_size=self.cfg.train.batch_size,
+            shuffle=True,
+            collate_fn=numpy_collate,
         )
 
         return key
@@ -125,13 +130,17 @@ class Trainer:
         self.rng = self.create_data_loader(self.rng, epoch_idx)
         for i, batch in enumerate(self.data_loader):
             for _ in range(self.cfg.train.num_AR_steps):
-                self.L_state, ar_loss = self.maximize_AR_step(self.L_state, self.D_state, batch)
+                self.L_state, ar_loss = self.maximize_AR_step(
+                    self.L_state, self.D_state, batch
+                )
             for _ in range(self.cfg.train.num_adversarial_steps):
                 self.D_state, adv_loss = self.minimize_adversarial_loss_step(
                     self.L_state, self.D_state, batch
                 )
 
-            print(f"Epoch: {epoch_idx}, AR loss: {ar_loss}, adversarial loss: {adv_loss}")
+            print(
+                f"Epoch: {epoch_idx}, AR loss: {ar_loss}, adversarial loss: {adv_loss}"
+            )
 
             if self.wandb_log:
                 wandb.log(
@@ -172,7 +181,9 @@ class Trainer:
             self.train_epoch(epoch_idx=epoch)
 
     def sample(self, rng, n, burn_in, parallel_chains, name):
-        kernel_fn = jax.jit(lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x))
+        kernel_fn = jax.jit(
+            lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x)
+        )
         logging.info("Sampling...")
         start_time = time.time()
         samples, ar = metropolis_hastings_with_momentum(
@@ -212,7 +223,9 @@ class Trainer:
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = orbax_utils.save_args_from_target(ckpt)
         orbax_checkpointer.save(
-            os.path.join(self.checkpoint_path, f"{epoch}_{step}"), ckpt, save_args=save_args
+            os.path.join(self.checkpoint_path, f"{epoch}_{step}"),
+            ckpt,
+            save_args=save_args,
         )
 
         # log cfg into checkpoint_path
@@ -222,7 +235,9 @@ class Trainer:
 
     def load_model(self, epoch, step):
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        ckpt = orbax_checkpointer.restore(os.path.join(self.checkpoint_path, f"{epoch}_{step}"))
+        ckpt = orbax_checkpointer.restore(
+            os.path.join(self.checkpoint_path, f"{epoch}_{step}")
+        )
         self.L_state = ckpt["L"]
         self.D_state = ckpt["D"]
 
@@ -299,7 +314,9 @@ class TrainerLogisticRegression:
         self.maximize_AR_step = jax.jit(maximize_AR_step)
 
         def minimize_adversarial_loss_step(L_state, D_state, batch):
-            my_loss = lambda phi_params: adversarial_loss(phi_params, D_state, L_state, batch)
+            my_loss = lambda phi_params: adversarial_loss(
+                phi_params, D_state, L_state, batch
+            )
             adv_loss, grads = jax.value_and_grad(my_loss, has_aux=False)(D_state.params)
             D_state = D_state.apply_gradients(grads=grads)
 
@@ -312,10 +329,13 @@ class TrainerLogisticRegression:
         if hmc_samples:
             dataset = SamplesDataset(np.array(self.hmc_samples))
             self.data_loader = DataLoader(
-                dataset, batch_size=self.cfg.train.batch_size, shuffle=True, collate_fn=numpy_collate
+                dataset,
+                batch_size=self.cfg.train.batch_size,
+                shuffle=True,
+                collate_fn=numpy_collate,
             )
             return key
-        
+
         else:
             key, subkey = jax.random.split(key)
             samples, ar = self.sample(
@@ -328,10 +348,13 @@ class TrainerLogisticRegression:
 
             dataset = SamplesDataset(np.array(samples))
             self.data_loader = DataLoader(
-                dataset, batch_size=self.cfg.train.batch_size, shuffle=True, collate_fn=numpy_collate
+                dataset,
+                batch_size=self.cfg.train.batch_size,
+                shuffle=True,
+                collate_fn=numpy_collate,
             )
 
-            print(f'ACCEPTANCE RATE: {ar}')
+            print(f"ACCEPTANCE RATE: {ar}")
             return key
 
     def train_epoch(self, epoch_idx):
@@ -342,13 +365,17 @@ class TrainerLogisticRegression:
 
         for i, batch in enumerate(self.data_loader):
             for _ in range(self.cfg.train.num_AR_steps):
-                self.L_state, ar_loss = self.maximize_AR_step(self.L_state, self.D_state, batch)
+                self.L_state, ar_loss = self.maximize_AR_step(
+                    self.L_state, self.D_state, batch
+                )
             for _ in range(self.cfg.train.num_adversarial_steps):
                 self.D_state, adv_loss = self.minimize_adversarial_loss_step(
                     self.L_state, self.D_state, batch
                 )
 
-            print(f"Epoch: {epoch_idx}, AR loss: {ar_loss}, adversarial loss: {adv_loss}")
+            print(
+                f"Epoch: {epoch_idx}, AR loss: {ar_loss}, adversarial loss: {adv_loss}"
+            )
 
             if self.wandb_log:
                 wandb.log(
@@ -367,28 +394,30 @@ class TrainerLogisticRegression:
                 self.train_epoch(epoch_idx=epoch)
                 self.save_model(epoch=epoch, step=0)
                 if epoch % 20 == 0:
-                    self.sample(                
+                    self.sample(
                         rng=subkey,
                         n=self.cfg.train.num_resampling_steps,
                         burn_in=self.cfg.train.resampling_burn_in,
                         parallel_chains=self.cfg.train.num_resampling_parallel_chains,
-                        name=None
-                        )
+                        name=None,
+                    )
 
         for epoch_bts in range(epoch, self.cfg.train.num_epochs):
             self.train_epoch(epoch_idx=epoch_bts)
             if epoch_bts % 10 == 0:
                 self.save_model(epoch=epoch_bts, step=0)
-                self.sample(                
+                self.sample(
                     rng=subkey,
                     n=self.cfg.train.num_resampling_steps,
                     burn_in=self.cfg.train.resampling_burn_in,
                     parallel_chains=self.cfg.train.num_resampling_parallel_chains,
-                    name=None
-                    )
+                    name=None,
+                )
 
     def sample(self, rng, n, burn_in, parallel_chains, name):
-        kernel_fn = jax.jit(lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x))
+        kernel_fn = jax.jit(
+            lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x)
+        )
         logging.info("Sampling...")
         start_time = time.time()
         samples, ar, t = metropolis_hastings_with_momentum(
@@ -400,14 +429,13 @@ class TrainerLogisticRegression:
             parallel_chains=parallel_chains,
             burn_in=burn_in,
             rng=rng,
-            initial_std=1.,
+            initial_std=1.0,
             starting_points=self.hmc_samples,
         )
         logging.info(f"Sampling took {time.time() - start_time} seconds")
 
         if name is not None:
             name = self.cfg.figure_path / Path(name)
-
 
         # index = 0
         # fig = plot_logistic_regression_samples(
@@ -428,65 +456,96 @@ class TrainerLogisticRegression:
         #         )
         # predictions = get_predictions(self.X, samples[:, : self.X.shape[1]])
         # logging.info(f"Accuracy: {np.mean(predictions == self.t.astype(int))}")
-        
+
         if self.wandb_log:
 
             index = 0
 
             fig = self.cfg.figure_path / str(np.random.randint(999999))
             plot_logistic_regression_samples(
-                    samples[:self.cfg.log.samples_to_plot],
-                    num_chains=None,
-                    index=index,
-                    name=fig # Path(f"samples_logistic_regression_{index}.png"),
+                samples[: self.cfg.log.samples_to_plot],
+                num_chains=None,
+                index=index,
+                name=fig,  # Path(f"samples_logistic_regression_{index}.png"),
+            )
+            wandb.log(
+                {
+                    f"samples with {parallel_chains} chains": wandb.Image(
+                        str(fig) + ".png"
                     )
-            wandb.log({f"samples with {parallel_chains} chains": wandb.Image(str(fig)+".png")})
-            os.remove(str(fig)+".png")
+                }
+            )
+            os.remove(str(fig) + ".png")
 
             fig1 = self.cfg.figure_path / str(np.random.randint(999999))
             plot_histograms_logistic_regression(
-                        samples[:self.cfg.log.samples_to_plot],
-                        index=index,
-                        name=fig1 # Path(f"histograms_logistic_regression_{index}.png"),
+                samples[: self.cfg.log.samples_to_plot],
+                index=index,
+                name=fig1,  # Path(f"histograms_logistic_regression_{index}.png"),
+            )
+            wandb.log(
+                {
+                    f"histograms with {parallel_chains} chains": wandb.Image(
+                        str(fig1) + ".png"
                     )
-            wandb.log({f"histograms with {parallel_chains} chains": wandb.Image(str(fig1)+".png")})
-            os.remove(str(fig1)+".png")
-            
+                }
+            )
+            os.remove(str(fig1) + ".png")
 
             fig2 = self.cfg.figure_path / str(np.random.randint(999999))
             plot_histograms2d_logistic_regression(
-                        samples[:self.cfg.log.samples_to_plot],
-                        index=index,
-                        name=fig2 # Path(f"histograms2d_logistic_regression_{index}.png"),
+                samples[: self.cfg.log.samples_to_plot],
+                index=index,
+                name=fig2,  # Path(f"histograms2d_logistic_regression_{index}.png"),
+            )
+            wandb.log(
+                {
+                    f"histograms2d with {parallel_chains} chains": wandb.Image(
+                        str(fig2) + ".png"
                     )
-            wandb.log({f"histograms2d with {parallel_chains} chains": wandb.Image(str(fig2)+".png")})
-            os.remove(str(fig2)+".png")            
+                }
+            )
+            os.remove(str(fig2) + ".png")
 
             fig3 = self.cfg.figure_path / str(np.random.randint(999999))
             plot_first_kernel_iteration(
                 kernel=kernel_fn,
                 starting_points=self.hmc_samples,
                 index=index,
-                name=fig3 # Path(f"first_kernel_iteration_{index}.png"),
+                name=fig3,  # Path(f"first_kernel_iteration_{index}.png"),
             )
-            wandb.log({f"first_kernel_iteration with {parallel_chains} chains": wandb.Image(str(fig3)+".png")})
-            os.remove(str(fig3)+".png")
+            wandb.log(
+                {
+                    f"first_kernel_iteration with {parallel_chains} chains": wandb.Image(
+                        str(fig3) + ".png"
+                    )
+                }
+            )
+            os.remove(str(fig3) + ".png")
 
             fig3p = self.cfg.figure_path / str(np.random.randint(999999))
             plot_first_kernel_iteration(
                 kernel=kernel_fn,
                 starting_points=self.hmc_samples,
                 index=18,
-                name=fig3p # Path(f"first_kernel_iteration_{index}.png"),
+                name=fig3p,  # Path(f"first_kernel_iteration_{index}.png"),
             )
-            wandb.log({f"first_kernel_iteration (momenta) with {parallel_chains} chains": wandb.Image(str(fig3p)+".png")})
-            os.remove(str(fig3p)+".png")
+            wandb.log(
+                {
+                    f"first_kernel_iteration (momenta) with {parallel_chains} chains": wandb.Image(
+                        str(fig3p) + ".png"
+                    )
+                }
+            )
+            os.remove(str(fig3p) + ".png")
 
             wandb.log({"acceptance rate": ar})
 
             esss = []
             for i in range(self.density.dim):
-                eff_ess = ess(samples[:1000, i], self.density.mean()[i], self.density.std()[i])
+                eff_ess = ess(
+                    samples[:1000, i], self.density.mean()[i], self.density.std()[i]
+                )
                 esss.append(eff_ess)
                 # wandb.log({f"ESS w_{i}": eff_ess})
             wandb.log({f"Minimum ESS (1000 max)": np.min(esss)})
@@ -499,10 +558,12 @@ class TrainerLogisticRegression:
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = orbax_utils.save_args_from_target(ckpt)
         orbax_checkpointer.save(
-            (Path(self.checkpoint_path)/ Path(f"{epoch}_{step}")).absolute(), # os.path.join(self.checkpoint_path,f"{epoch}_{step}"),
+            (
+                Path(self.checkpoint_path) / Path(f"{epoch}_{step}")
+            ).absolute(),  # os.path.join(self.checkpoint_path,f"{epoch}_{step}"),
             ckpt,
             save_args=save_args,
-            force=self.cfg.overwrite
+            force=self.cfg.overwrite,
         )
 
         # log cfg into checkpoint_path
@@ -512,7 +573,9 @@ class TrainerLogisticRegression:
 
     def load_model(self, epoch, step):
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        ckpt = orbax_checkpointer.restore(os.path.join(self.checkpoint_path, f"{epoch}_{step}"))
+        ckpt = orbax_checkpointer.restore(
+            os.path.join(self.checkpoint_path, f"{epoch}_{step}")
+        )
         self.L_state = ckpt["L"]
         self.D_state = ckpt["D"]
 

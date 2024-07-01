@@ -17,4 +17,8 @@ from logistic_regression.heart import Heart
 from logistic_regression.german import German
 from logistic_regression.australian import Australian
 
-from logistic_regression.statistics import statistics_german, statistics_heart, statistics_australian
+from logistic_regression.statistics import (
+    statistics_german,
+    statistics_heart,
+    statistics_australian,
+)

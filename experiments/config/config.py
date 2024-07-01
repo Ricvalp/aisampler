@@ -16,7 +16,9 @@ def get_config(mode: Literal["train", "sample"] = None):
 
     cfg.data_for_plots_dir = pathlib.Path("./plots/data_for_plots")
 
-    cfg.figure_path = pathlib.Path("./figures") / datetime.now().strftime("%Y%m%d-%H%M%S")
+    cfg.figure_path = pathlib.Path("./figures") / datetime.now().strftime(
+        "%Y%m%d-%H%M%S"
+    )
     cfg.checkpoint_dir = pathlib.Path("./checkpoints")
     cfg.checkpoint_name = "debug"
     cfg.overwrite = True

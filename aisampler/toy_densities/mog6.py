@@ -3,26 +3,36 @@ import jax.numpy as jnp
 from jax import grad
 
 
-statistics_mog6 = {
-    'mu': [0., 0.],
-    'sigma': [3.6, 3.6]
-}
+statistics_mog6 = {"mu": [0.0, 0.0], "sigma": [3.6, 3.6]}
+
 
 def normal(x, mu, inv_cov):
     return jnp.exp(-0.5 * jnp.dot(jnp.dot((x - mu).T, inv_cov), (x - mu)))
-    
+
+
 normal = jax.vmap(normal, in_axes=(0, None, None))
 
-def mog6(x, mu1=jnp.array([5.0, 0.0]), mu2=jnp.array([-5.0, 0.0]), mu3=jnp.array([0.0, 5.0]), inv_cov=jnp.eye(2) * 2):
-    mus = [5 * jnp.array([jnp.sin(jnp.pi * i / 3), jnp.cos(jnp.pi * i / 3)]) for i in range(6)]
+
+def mog6(
+    x,
+    mu1=jnp.array([5.0, 0.0]),
+    mu2=jnp.array([-5.0, 0.0]),
+    mu3=jnp.array([0.0, 5.0]),
+    inv_cov=jnp.eye(2) * 2,
+):
+    mus = [
+        5 * jnp.array([jnp.sin(jnp.pi * i / 3), jnp.cos(jnp.pi * i / 3)])
+        for i in range(6)
+    ]
     return -jnp.log(
-        (1/6) * normal(x, mus[0], inv_cov)+
-        (1/6) * normal(x, mus[1], inv_cov)+
-        (1/6) * normal(x, mus[2], inv_cov)+
-        (1/6) * normal(x, mus[3], inv_cov)+
-        (1/6) * normal(x, mus[4], inv_cov)+
-        (1/6) * normal(x, mus[5], inv_cov)
-        )
+        (1 / 6) * normal(x, mus[0], inv_cov)
+        + (1 / 6) * normal(x, mus[1], inv_cov)
+        + (1 / 6) * normal(x, mus[2], inv_cov)
+        + (1 / 6) * normal(x, mus[3], inv_cov)
+        + (1 / 6) * normal(x, mus[4], inv_cov)
+        + (1 / 6) * normal(x, mus[5], inv_cov)
+    )
+
 
 def hamiltonian_mog6(
     x,
@@ -33,47 +43,37 @@ def hamiltonian_mog6(
     inv_cov_p=jnp.eye(2),
 ):
     d = x.shape[1]
-    return mog6(x[:, : d // 2], mu1, mu2, mu3, inv_cov) - jnp.log(normal(x[:, d // 2 :], jnp.zeros(d // 2), inv_cov_p))
+    return mog6(x[:, : d // 2], mu1, mu2, mu3, inv_cov) - jnp.log(
+        normal(x[:, d // 2 :], jnp.zeros(d // 2), inv_cov_p)
+    )
+
 
 def nv_normal(x, mu, inv_cov):
     return jnp.exp(-0.5 * jnp.dot(jnp.dot((x - mu).T, inv_cov), (x - mu)))
 
-def nv_mog6(x, mu1=jnp.array([5.0, 0.0]), mu2=jnp.array([-5.0, 0.0]), mu3=jnp.array([0.0, 5.0]), inv_cov=jnp.eye(2) * 2):
-    mus = [5 * jnp.array([jnp.sin(jnp.pi * i / 3), jnp.cos(jnp.pi * i / 3)]) for i in range(6)]
+
+def nv_mog6(
+    x,
+    mu1=jnp.array([5.0, 0.0]),
+    mu2=jnp.array([-5.0, 0.0]),
+    mu3=jnp.array([0.0, 5.0]),
+    inv_cov=jnp.eye(2) * 2,
+):
+    mus = [
+        5 * jnp.array([jnp.sin(jnp.pi * i / 3), jnp.cos(jnp.pi * i / 3)])
+        for i in range(6)
+    ]
     return -jnp.log(
-        (1/6) * nv_normal(x, mus[0], inv_cov)+
-        (1/6) * nv_normal(x, mus[1], inv_cov)+
-        (1/6) * nv_normal(x, mus[2], inv_cov)+
-        (1/6) * nv_normal(x, mus[3], inv_cov)+
-        (1/6) * nv_normal(x, mus[4], inv_cov)+
-        (1/6) * nv_normal(x, mus[5], inv_cov)
-        )
+        (1 / 6) * nv_normal(x, mus[0], inv_cov)
+        + (1 / 6) * nv_normal(x, mus[1], inv_cov)
+        + (1 / 6) * nv_normal(x, mus[2], inv_cov)
+        + (1 / 6) * nv_normal(x, mus[3], inv_cov)
+        + (1 / 6) * nv_normal(x, mus[4], inv_cov)
+        + (1 / 6) * nv_normal(x, mus[5], inv_cov)
+    )
+
 
 grad_mog6 = jax.vmap(grad(nv_mog6))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # def normal(x, mu, inv_cov):
@@ -92,13 +92,13 @@ grad_mog6 = jax.vmap(grad(nv_mog6))
 #     return -jnp.log(
 #         normal(x, mus[0], inv_cov)/3 +
 #         normal(x, mus[1], inv_cov)/3 +
-#         normal(x, mus[2], inv_cov)/3 
+#         normal(x, mus[2], inv_cov)/3
 #         )
 
 # def hamiltonian_mog6(x, inv_cov_p=jnp.eye(2) * 2):
 #     d = x.shape[1]
 #     return mog6(x[:, : d // 2]) - jnp.log(normal(x[:, d // 2 :], jnp.zeros(2), inv_cov_p))
-                                
+
 # def nv_normal(x, mu, inv_cov):
 #     return jnp.exp(-0.5 * jnp.dot(jnp.dot((x - mu).T, inv_cov), (x - mu)))
 
@@ -117,24 +117,6 @@ grad_mog6 = jax.vmap(grad(nv_mog6))
 #         )
 
 # grad_mog6 = jax.vmap(grad(nv_mog6))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # import matplotlib.pyplot as plt

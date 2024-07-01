@@ -34,7 +34,9 @@ def plot_discriminator(
     def r(y):
         return 1 / (1 + jnp.exp(-y))
 
-    x_0 = jnp.array([jnp.concatenate([x_0, jnp.array([p_0, p_1])], axis=0) for _ in range(n**2)])
+    x_0 = jnp.array(
+        [jnp.concatenate([x_0, jnp.array([p_0, p_1])], axis=0) for _ in range(n**2)]
+    )
     ar = discriminator(x_0, z_q).reshape((n, n))
 
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))

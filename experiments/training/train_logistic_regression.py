@@ -15,6 +15,7 @@ import logistic_regression
 
 _TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
 
+
 def load_cfgs(
     _TASK_FILE,
 ):
@@ -34,10 +35,12 @@ def main(_):
     density = getattr(logistic_regression, cfg.dataset.name)(
         batch_size=cfg.train.num_resampling_parallel_chains,
         mode=cfg.dataset.mode,
-        )
+    )
 
     if cfg.train.bootstrap_with_hmc:
-        hmc_samples = np.load(cfg.hmc_sample_dir / Path(f"hmc_samples_{cfg.dataset.name}.npy"))
+        hmc_samples = np.load(
+            cfg.hmc_sample_dir / Path(f"hmc_samples_{cfg.dataset.name}.npy")
+        )
         trainer = TrainerLogisticRegression(
             cfg=cfg,
             density=density,

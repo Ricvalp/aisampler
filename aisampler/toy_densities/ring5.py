@@ -3,10 +3,8 @@ import jax.numpy as jnp
 from jax import grad
 
 
-statistics_ring5 = {
-    'mu': [0., 0.],
-    'sigma': [2.58, 2.58]
-}
+statistics_ring5 = {"mu": [0.0, 0.0], "sigma": [2.58, 2.58]}
+
 
 def ring5(x):
     u1 = ((jnp.sqrt(x[:, 0] ** 2 + x[:, 1] ** 2) - 1) ** 2) / 0.04

@@ -3,10 +3,8 @@ import jax.numpy as jnp
 from jax import grad
 
 
-statistics_ring = {
-    'mu': [0., 0.],
-    'sigma': [1.5, 1.5]
-}
+statistics_ring = {"mu": [0.0, 0.0], "sigma": [1.5, 1.5]}
+
 
 def ring(x):
     return ((jnp.sqrt(x[:, 0] ** 2 + x[:, 1] ** 2) - 2) ** 2) / 0.32

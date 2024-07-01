@@ -36,7 +36,6 @@ def get_hamiltonian_density_image(
     return Z_p, Z_q
 
 
-
 def plot_samples_with_density(
     samples, target_density, q_0=0.0, q_1=0.0, name=None, ar=None, **kwargs
 ):
@@ -53,8 +52,13 @@ def plot_samples_with_density(
 
     if ar is not None:
         fig.suptitle(f"Acceptance rate: {ar:.3}", fontsize=25)
-    
-    contour_q = ax.contourf(jnp.linspace(-xlim_q, xlim_q, Z_q.shape[0]), jnp.linspace(-ylim_q, ylim_q, Z_q.shape[1]), Z_q, cmap="viridis")
+
+    contour_q = ax.contourf(
+        jnp.linspace(-xlim_q, xlim_q, Z_q.shape[0]),
+        jnp.linspace(-ylim_q, ylim_q, Z_q.shape[1]),
+        Z_q,
+        cmap="viridis",
+    )
 
     ax.scatter(samples[:, 0], samples[:, 1], c="red", alpha=0.6, s=10.5)
     ax.plot(samples[:, 0], samples[:, 1], **kwargs)
@@ -72,13 +76,21 @@ def plot_samples_with_density(
 
     return fig
 
+
 def plot_kde(samples, name=None):
     # sns.set(style="whitegrid")
     plt.figure(figsize=(5, 5))
     sns.set(style="ticks")
     plt.xlim(-8, 8)
     plt.ylim(-8, 8)
-    sns.kdeplot(x=samples[:, 0], y=samples[:, 1], bw_adjust=.5, fill=True, cmap="viridis", shade_lowest=True)
+    sns.kdeplot(
+        x=samples[:, 0],
+        y=samples[:, 1],
+        bw_adjust=0.5,
+        fill=True,
+        cmap="viridis",
+        shade_lowest=True,
+    )
     plt.tick_params(axis="x", labelsize=25)
     plt.tick_params(axis="y", labelsize=25)
     plt.tight_layout()
@@ -101,7 +113,9 @@ def plot_chain(samples, target_density, q_0=0.0, q_1=0.0, name=None, ar=None, **
 
     if ar is not None:
         fig.suptitle(f"Acceptance rate: {ar:.3}")
-    ax.imshow(Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis")
+    ax.imshow(
+        Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
+    )
     ax.scatter(samples[:, 0], samples[:, 1], s=0.5)
     ax.plot(samples[:, 0], samples[:, 1], **kwargs)
     ax.set_title("q")

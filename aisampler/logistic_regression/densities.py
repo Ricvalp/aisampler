@@ -33,7 +33,9 @@ def hamiltonian(x, t, X, inv_sigma):
 
 def u(b, t, X, inv_sigma):
     return -jnp.sum(
-        t * jnp.log(sigma(X @ b.T) + 1e-10) + (1 - t) * jnp.log(1 - sigma(X @ b.T) + 1e-10), axis=0
+        t * jnp.log(sigma(X @ b.T) + 1e-10)
+        + (1 - t) * jnp.log(1 - sigma(X @ b.T) + 1e-10),
+        axis=0,
     ) + normal(b, inv_sigma)
 
 
@@ -71,7 +73,7 @@ def plot_gradients_logistic_regression_density(lim, w, d, grad_potential_fn, nam
     y = jnp.linspace(-lim, lim, 30)
     y, z = jnp.meshgrid(y, y)
     Z = jnp.stack([y, z], axis=-1).reshape(30 * 30, 2)
-    QP = jnp.concatenate([Z, jnp.ones((30 * 30, d-2)) * 0.5], axis=-1)
+    QP = jnp.concatenate([Z, jnp.ones((30 * 30, d - 2)) * 0.5], axis=-1)
     grads = grad_potential_fn(QP)
     plt.quiver(QP[:, 0], QP[:, 1], grads[:, 0], grads[:, 1])
     if w is not None:
@@ -85,9 +87,12 @@ def plot_density_logistic_regression(lim, w, d, density, name=None):
     y = jnp.linspace(-lim, lim, 30)
     y, z = jnp.meshgrid(y, y)
     Z = jnp.stack([y, z], axis=-1).reshape(30 * 30, 2)
-    QP = jnp.concatenate([Z, jnp.ones((30 * 30, 2*d-2)) * 0.5], axis=-1)
+    QP = jnp.concatenate([Z, jnp.ones((30 * 30, 2 * d - 2)) * 0.5], axis=-1)
     plt.imshow(
-        density(QP).reshape(30, 30), extent=(-lim, lim, -lim, lim), origin="lower", cmap="viridis"
+        density(QP).reshape(30, 30),
+        extent=(-lim, lim, -lim, lim),
+        origin="lower",
+        cmap="viridis",
     )
     if w is not None:
         plt.scatter(w[0], w[1], s=5, c="r")

@@ -17,6 +17,7 @@ def plot_density(density, xlim, ylim, n=100, name=None):
     plt.show()
     plt.close()
 
+
 def plot_hamiltonian_density(
     density, xlim_q, ylim_q, xlim_p, ylim_p, n=100, q_0=0.0, q_1=0.0, name=None
 ):
@@ -48,14 +49,14 @@ def plot_hamiltonian_density(
     Z_p = jnp.exp(-density(z_p)).reshape((n, n))
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-    
+
     # Contour plot for Z_q
     contour_q = ax[0].contourf(X_q, Y_q, Z_q, cmap="Reds")
     ax[0].set_title("q")
     ax[0].set_xlabel("q1")
     ax[0].set_ylabel("q2")
     fig.colorbar(contour_q, ax=ax[0])
-    
+
     # Contour plot for Z_p
     contour_p = ax[1].contourf(X_p, Y_p, Z_p, cmap="Reds")
     ax[1].set_title("p")
@@ -69,6 +70,7 @@ def plot_hamiltonian_density(
         plt.savefig(name)
     plt.show()
     plt.close()
+
 
 def plot_hamiltonian_density_only_q(density, xlim_q, ylim_q, n=100, name=None):
 
@@ -87,20 +89,24 @@ def plot_hamiltonian_density_only_q(density, xlim_q, ylim_q, n=100, name=None):
     Z_q = jnp.exp(-density(z_q)).reshape((n, n))
 
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-    
-    ax.contourf(X_q, Y_q, Z_q * (Z_q > 1e-10), cmap="viridis", shade_lowest=True) # "Reds")
+
+    ax.contourf(
+        X_q, Y_q, Z_q * (Z_q > 1e-10), cmap="viridis", shade_lowest=True
+    )  # "Reds")
     ax.tick_params(axis="x", labelsize=25)
     ax.tick_params(axis="y", labelsize=25)
 
     plt.tight_layout()
-    
+
     if name is not None:
         plt.savefig(name)
     plt.show()
     plt.close()
 
 
-def plot_logistic_regression_density(density, xlim_q, ylim_q, xlim_p, ylim_p, d, n=100, name=None):
+def plot_logistic_regression_density(
+    density, xlim_q, ylim_q, xlim_p, ylim_p, d, n=100, name=None
+):
     x = jnp.linspace(-xlim_q, xlim_q, n)
     y = jnp.linspace(-ylim_q, ylim_q, n)
     X, Y = jnp.meshgrid(x, y)
@@ -119,7 +125,9 @@ def plot_logistic_regression_density(density, xlim_q, ylim_q, xlim_p, ylim_p, d,
     Z = density(z).reshape((n, n))
 
     fig = plt.figure(figsize=(10, 5))
-    plt.imshow(Z, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis")
+    plt.imshow(
+        Z, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
+    )
     plt.title("w")
     plt.xlabel("w1")
     plt.ylabel("w2")

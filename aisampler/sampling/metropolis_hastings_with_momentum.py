@@ -13,7 +13,9 @@ def mh_kernel_with_momentum(x, key, cov_p, kernel, density, parallel_chains=100)
     log_prob_old = density(x)
     log_prob_ratio = log_prob_old - log_prob_new  # log_prob_old - log_prob_new
 
-    accept = jnp.log(jax.random.uniform(accept_subkey, (parallel_chains,))) < log_prob_ratio
+    accept = (
+        jnp.log(jax.random.uniform(accept_subkey, (parallel_chains,))) < log_prob_ratio
+    )
 
     x_new = jnp.where(accept[:, None], x_new, x)[:, : x.shape[1] // 2]
     momentum = jax.random.multivariate_normal(

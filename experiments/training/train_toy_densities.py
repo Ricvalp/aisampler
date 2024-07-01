@@ -9,6 +9,7 @@ from aisampler.trainer import Trainer
 
 _TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
 
+
 def load_cfgs(
     _TASK_FILE,
 ):

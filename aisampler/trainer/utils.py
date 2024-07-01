@@ -1,4 +1,3 @@
-
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -14,10 +13,11 @@ class SamplesDataset(Dataset):
         sample = self.data[index]
         return sample
 
+
 def numpy_collate(batch):
     if isinstance(batch[0], np.ndarray):
         return np.stack(batch)
-    elif isinstance(batch[0], (tuple,list)):
+    elif isinstance(batch[0], (tuple, list)):
         transposed = zip(*batch)
         return [numpy_collate(samples) for samples in transposed]
     else:
