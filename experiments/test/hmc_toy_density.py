@@ -2,20 +2,16 @@ from pathlib import Path
 
 import jax
 import jax.numpy as jnp
-import numpy as np
-from absl import app, logging
+from absl import app
 from ml_collections import config_flags
 
 import aisampler.toy_densities as densities
-from config import load_cfgs
-from aisampler.toy_densities import (
-    plot_hamiltonian_density,
-    plot_hamiltonian_density_only_q,
-)
+
+
 from aisampler.sampling import hmc, plot_samples_with_density
 from aisampler.sampling.metrics import ess, gelman_rubin_r
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file("task", default="experiments/config/hmc_toy_density.py")
 
 
 def load_cfgs(
@@ -30,48 +26,31 @@ def main(_):
     cfg = load_cfgs(_TASK_FILE)
     cfg.figure_path.mkdir(parents=True, exist_ok=True)
 
-    density = getattr(densities, cfg.target_density.name)
-    density_statistics = getattr(
-        densities, "statistics_" + cfg.hmc.potential_function_name
-    )
 
-    grad_potential_fn = getattr(densities, f"grad_{cfg.hmc.potential_function_name}")
+    density = getattr(densities, cfg.target_density_name)
+    densities.plot_hamiltonian_density(density)
 
-    plot_hamiltonian_density_only_q(
-        density,
-        xlim_q=8,  # 6.6,
-        ylim_q=8,  # 6.6,
-        n=200,
-        name=cfg.figure_path
-        / Path(f"hamiltonian_density_{cfg.target_density.name}.png"),
-    )
+
+    grad_potential_fn = getattr(densities, f"grad_{cfg.potential_function_name}")
 
     samples, ar, t = hmc(
         density=density,
         grad_potential_fn=grad_potential_fn,
-        cov_p=jnp.eye(cfg.sample.d),
-        d=cfg.sample.d,
-        parallel_chains=cfg.sample.num_parallel_chains,
-        num_steps=cfg.hmc.num_steps,
-        step_size=cfg.hmc.step_size,
-        n=cfg.sample.num_iterations,
-        burn_in=cfg.sample.burn_in,
+        cov_p=jnp.eye(2),
+        d=2,
+        parallel_chains=cfg.num_parallel_chains,
+        num_steps=cfg.num_steps,
+        step_size=cfg.step_size,
+        n=cfg.num_iterations,
+        burn_in=cfg.burn_in,
         rng=jax.random.PRNGKey(cfg.seed),
     )
 
     plot_samples_with_density(
         samples,
         target_density=density,
-        q_0=0.0,
-        q_1=0.0,
-        name=cfg.figure_path / Path(f"jumps_hmc_.png"),
-        ar=None,
-        c="red",
-        alpha=0.6,
-        linewidth=1.5,
+        ar=ar,
     )
-
-    assert True
 
 
 if __name__ == "__main__":

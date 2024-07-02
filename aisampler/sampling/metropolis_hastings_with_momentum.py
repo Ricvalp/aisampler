@@ -13,9 +13,13 @@ def mh_kernel_with_momentum(x, key, cov_p, kernel, density, parallel_chains=100)
     log_prob_old = density(x)
     log_prob_ratio = log_prob_old - log_prob_new  # log_prob_old - log_prob_new
 
-    accept = (
-        jnp.log(jax.random.uniform(accept_subkey, (parallel_chains,))) < log_prob_ratio
+    accept = jax.random.uniform(accept_subkey, (parallel_chains,)) < jnp.exp(
+        log_prob_ratio
     )
+    
+    # accept = (
+    #     jnp.log(jax.random.uniform(accept_subkey, (parallel_chains,))) < log_prob_ratio
+    # )
 
     x_new = jnp.where(accept[:, None], x_new, x)[:, : x.shape[1] // 2]
     momentum = jax.random.multivariate_normal(
@@ -64,18 +68,21 @@ def metropolis_hastings_with_momentum(
     else:
         x = starting_points[:parallel_chains]
 
-    logging.info("Jitting AI kernel...")
-    time_start = time.time()
+    # logging.info("Jitting AI kernel...")
+    # time_start = time.time()
+
     jit_mh_kernel_with_momentum(
         x, sampling_subkey, cov_p, kernel, density, parallel_chains=parallel_chains
     )
-    logging.info(f"Jitting done. Time taken: {time.time() - time_start}")
+
+    # logging.info(f"Jitting done. Time taken: {time.time() - time_start}")
 
     samples = []
     ars = []
 
-    logging.info("Sampling...")
-    time_start = time.time()
+    # logging.info("Sampling...")
+    # time_start = time.time()
+
     for i in range(n + burn_in):
         x, ar, sampling_subkey = jit_mh_kernel_with_momentum(
             x, sampling_subkey, cov_p, kernel, density, parallel_chains=parallel_chains
@@ -83,12 +90,13 @@ def metropolis_hastings_with_momentum(
         if i >= burn_in:
             samples.append(x)
             ars.append(ar)
-    t = time.time() - time_start
-    logging.info(f"Sampling done. Time taken: {t}")
+
+    # t = time.time() - time_start
+    # logging.info(f"Sampling done. Time taken: {t}")
 
     # return jnp.transpose(jnp.array(samples), (1, 0, 2)), jnp.array(ars).mean() # , t
 
-    return jnp.vstack(samples), jnp.array(ars).mean()  # , t
+    return jnp.vstack(samples), jnp.array(ars).mean()
 
 
 @jax.jit

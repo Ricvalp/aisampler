@@ -24,8 +24,5 @@ from aisampler.toy_densities.ring5 import (
     statistics_ring5,
 )
 from aisampler.toy_densities.utils import (
-    plot_density,
     plot_hamiltonian_density,
-    plot_logistic_regression_density,
-    plot_hamiltonian_density_only_q,
 )

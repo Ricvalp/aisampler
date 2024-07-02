@@ -11,15 +11,16 @@ from absl import logging
 from flax.training import orbax_utils
 from flax.training.train_state import TrainState
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 import wandb
 from aisampler.discriminators import create_simple_discriminator, log_plot
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
-    plot_samples_with_density,
 )
+
 from aisampler.trainer.utils import SamplesDataset, numpy_collate
-from aisampler.sampling.metrics import ess, gelman_rubin_r
+from aisampler.sampling.metrics import ess
 
 from aisampler.logistic_regression import (
     plot_logistic_regression_samples,
@@ -34,17 +35,13 @@ class Trainer:
         self,
         cfg,
         density,
-        wandb_log,
-        checkpoint_dir,
-        checkpoint_name,
-        seed,
     ):
-        self.rng = jax.random.PRNGKey(seed)
+        self.rng = jax.random.PRNGKey(cfg.seed)
 
         self.density = density
-        self.wandb_log = wandb_log
+        self.wandb_log = cfg.wandb.use
         self.checkpoint_path = os.path.join(
-            os.path.join(checkpoint_dir, cfg.target_density.name), checkpoint_name
+            os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density.name), cfg.checkpoint.checkpoint_name
         )
 
         self.cfg = cfg
@@ -52,9 +49,9 @@ class Trainer:
         self.init_model()
         self.create_train_steps()
 
-        # save cfg into checkpoint_path
 
     def init_model(self):
+
         discriminator = create_simple_discriminator(
             num_flow_layers=self.cfg.kernel.num_flow_layers,
             num_hidden_flow=self.cfg.kernel.num_hidden,
@@ -108,15 +105,14 @@ class Trainer:
 
         self.minimize_adversarial_loss_step = jax.jit(minimize_adversarial_loss_step)
 
-    def create_data_loader(self, key, epoch_idx):
+    def create_data_loader(self, key):
         key, subkey = jax.random.split(key)
 
-        samples, _ = self.sample(
+        samples, ar = self.sample(
             rng=subkey,
             n=self.cfg.train.num_resampling_steps,
             burn_in=self.cfg.train.resampling_burn_in,
             parallel_chains=self.cfg.train.num_resampling_parallel_chains,
-            name=None,  # f"samples_in_data_loader_epoch_{epoch_idx}.png",
         )
 
         dataset = SamplesDataset(np.array(samples))
@@ -127,23 +123,27 @@ class Trainer:
             collate_fn=numpy_collate,
         )
 
-        return key
+        return key, ar
 
     def train_epoch(self, epoch_idx):
-        self.rng = self.create_data_loader(self.rng, epoch_idx)
+        self.rng, ar = self.create_data_loader(self.rng)
+        if self.wandb_log:
+            wandb.log({"acceptance rate": ar})
+        
+        ar_losses = []
+        adv_losses = []
         for i, batch in enumerate(self.data_loader):
             for _ in range(self.cfg.train.num_AR_steps):
                 self.L_state, ar_loss = self.maximize_AR_step(
                     self.L_state, self.D_state, batch
                 )
+            ar_losses.append(ar_loss)
+
             for _ in range(self.cfg.train.num_adversarial_steps):
                 self.D_state, adv_loss = self.minimize_adversarial_loss_step(
                     self.L_state, self.D_state, batch
                 )
-
-            print(
-                f"Epoch: {epoch_idx}, AR loss: {ar_loss}, adversarial loss: {adv_loss}"
-            )
+            adv_losses.append(adv_loss)
 
             if self.wandb_log:
                 wandb.log(
@@ -153,42 +153,25 @@ class Trainer:
                         "adversarial loss": adv_loss,
                     }
                 )
+        
+        if epoch_idx % self.cfg.log.save_every == 0:
+            self.save_model(epoch=epoch_idx)
+        
+        return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
 
-            if i % self.cfg.log.log_every == 0:
-                _, ar = self.sample(
-                    rng=self.rng,
-                    n=self.cfg.log.num_steps,
-                    burn_in=self.cfg.log.burn_in,
-                    parallel_chains=self.cfg.log.num_parallel_chains,
-                    name=None,  # f"samples_{epoch_idx}.png",
-                )
-                self.save_model(epoch=epoch_idx, step=i)
-
-                if self.wandb_log:
-                    wandb.log({"acceptance rate": ar})
-
-                    fig = log_plot(
-                        discriminator_parameters={"params": {"D": self.D_state.params}},
-                        num_layers_psi=self.cfg.discriminator.num_layers_psi,
-                        num_hidden_psi=self.cfg.discriminator.num_hidden_psi,
-                        num_layers_eta=self.cfg.discriminator.num_layers_eta,
-                        num_hidden_eta=self.cfg.discriminator.num_hidden_eta,
-                        activation=self.cfg.discriminator.activation,
-                        d=self.cfg.kernel.d,
-                        name="discriminator",
-                    )
-                    wandb.log({"discriminator": fig})
 
     def train_model(self):
-        for epoch in range(self.cfg.train.num_epochs):
-            self.train_epoch(epoch_idx=epoch)
+        for epoch in tqdm(range(self.cfg.train.num_epochs)):
+            ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
+            tqdm.write(f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}")
+  
 
-    def sample(self, rng, n, burn_in, parallel_chains, name):
+    def sample(self, rng, n, burn_in, parallel_chains):
+
         kernel_fn = jax.jit(
             lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x)
         )
-        logging.info("Sampling...")
-        start_time = time.time()
+
         samples, ar = metropolis_hastings_with_momentum(
             kernel=kernel_fn,
             density=self.density,
@@ -199,39 +182,21 @@ class Trainer:
             burn_in=burn_in,
             rng=rng,
         )
-        logging.info(f"Sampling took {time.time() - start_time} seconds")
-
-        if name is not None:
-            name = self.cfg.figure_path / Path(name)
-
-        fig = plot_samples_with_density(
-            samples,
-            target_density=self.density,
-            q_0=0.0,
-            q_1=0.0,
-            name=name,
-            c="red",
-            alpha=0.05,
-            ar=ar,
-        )
-
-        if self.wandb_log:
-            wandb.log({f"samples with {parallel_chains} chains": fig})
 
         return samples, ar
 
-    def save_model(self, epoch, step):
+    def save_model(self, epoch):
         ckpt = {"L": self.L_state, "D": self.D_state}
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = orbax_utils.save_args_from_target(ckpt)
         orbax_checkpointer.save(
-            (Path(self.checkpoint_path) / f"{epoch}_{step}").absolute(),
+            (Path(self.checkpoint_path) / f"{epoch}").absolute(),
             ckpt,
             save_args=save_args,
+            force=self.cfg.checkpoint.overwrite,
         )
 
-        # log cfg into checkpoint_path
-        if epoch == 0 and step == 0:
+        if epoch == 0:
             with open(os.path.join(self.checkpoint_path, "cfg.txt"), "w") as f:
                 f.write(str(self.cfg))
 
@@ -270,7 +235,6 @@ class TrainerLogisticRegression:
         self.init_model()
         self.create_train_steps()
 
-        # save cfg into checkpoint_path
 
     def init_model(self):
         discriminator = create_simple_discriminator(

@@ -5,8 +5,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 
-default_init = nn.initializers.normal(stddev=1e-2)
-
+default_init = nn.initializers.glorot_normal()
 
 class FlowModel(nn.Module):
     d: int
@@ -100,9 +99,7 @@ class SimpleMLP(nn.Module):
         for linear in self.linears[:-1]:
             x = linear(x)
             x = nn.relu(x)
-
         x = self.linears[-1](x)
-
         return x
 
 
@@ -120,26 +117,3 @@ def create_henon_flow(num_flow_layers, num_layers, num_hidden, d):
     flow_model = FlowModel(d, flow_layers)
 
     return flow_model
-
-
-if __name__ == "__main__":
-
-    d = 8
-
-    henon_flow = create_henon_flow(num_layers_flow=5, num_layers=3, num_hidden=16, d=d)
-
-    rng = jax.random.PRNGKey(42)
-    rng, subkey = jax.random.split(rng)
-
-    x = jax.random.normal(subkey, (10, 2 * d))
-
-    params = henon_flow.init(rng, x)
-
-    R = jnp.concatenate(jnp.array([[1.0 for _ in range(d)], [-1.0 for _ in range(d)]]))
-
-    z = henon_flow.apply(params, x)
-    z = z * R
-    z = henon_flow.apply(params, z)
-    z = z * R
-
-    assert jnp.allclose(z, x, atol=1e-6)
