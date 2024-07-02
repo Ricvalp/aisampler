@@ -42,13 +42,12 @@ def main(_):
     trainer.train_model()
 
     samples, ar = trainer.sample(
-        rng=jax.random.PRNGKey(42),
-        n=1000,
-        burn_in=500,
-        parallel_chains=10
+        rng=jax.random.PRNGKey(42), n=1000, burn_in=500, parallel_chains=10
     )
 
-    sampling.plot_samples_with_density(samples=samples, target_density=density, ar=ar, name=None)
+    sampling.plot_samples_with_density(
+        samples=samples, target_density=density, ar=ar, name=None
+    )
 
 
 if __name__ == "__main__":

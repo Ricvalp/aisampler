@@ -7,6 +7,7 @@ from flax import linen as nn
 
 default_init = nn.initializers.glorot_normal()
 
+
 class FlowModel(nn.Module):
     d: int
     flows: Sequence[nn.Module]

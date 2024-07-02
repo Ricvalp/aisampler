@@ -16,7 +16,7 @@ def mh_kernel_with_momentum(x, key, cov_p, kernel, density, parallel_chains=100)
     accept = jax.random.uniform(accept_subkey, (parallel_chains,)) < jnp.exp(
         log_prob_ratio
     )
-    
+
     # accept = (
     #     jnp.log(jax.random.uniform(accept_subkey, (parallel_chains,))) < log_prob_ratio
     # )

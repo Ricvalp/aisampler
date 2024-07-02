@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def get_hamiltonian_density_image(
-    density, xlim_q, ylim_q, xlim_p, ylim_p, n=100
-):
+def get_hamiltonian_density_image(density, xlim_q, ylim_q, xlim_p, ylim_p, n=100):
     x = jnp.linspace(-xlim_q, xlim_q, n)
     y = jnp.linspace(-ylim_q, ylim_q, n)
     X_q, Y_q = jnp.meshgrid(x, y)
@@ -27,7 +25,14 @@ def get_hamiltonian_density_image(
 
 
 def plot_samples_with_density(
-    samples, target_density, q_0=0.0, q_1=0.0, name=None, ar=None, include_trajectories=False, **kwargs
+    samples,
+    target_density,
+    q_0=0.0,
+    q_1=0.0,
+    name=None,
+    ar=None,
+    include_trajectories=False,
+    **kwargs,
 ):
     xlim_q = 8  # jnp.max(jnp.abs(samples[:, 0])) + 1.5
     ylim_q = 8  # jnp.max(jnp.abs(samples[:, 1])) + 1.5

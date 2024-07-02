@@ -11,7 +11,9 @@ import aisampler.toy_densities as densities
 from aisampler.sampling import hmc, plot_samples_with_density
 from aisampler.sampling.metrics import ess, gelman_rubin_r
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="experiments/config/hmc_toy_density.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/hmc_toy_density.py"
+)
 
 
 def load_cfgs(
@@ -26,10 +28,8 @@ def main(_):
     cfg = load_cfgs(_TASK_FILE)
     cfg.figure_path.mkdir(parents=True, exist_ok=True)
 
-
     density = getattr(densities, cfg.target_density_name)
     densities.plot_hamiltonian_density(density)
-
 
     grad_potential_fn = getattr(densities, f"grad_{cfg.potential_function_name}")
 

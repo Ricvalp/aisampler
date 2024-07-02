@@ -55,7 +55,7 @@ import seaborn as sns
 #     plt.close()
 
 
-def plot_hamiltonian_density(density, xlim_q=-8., ylim_q=-8., n=200, name=None):
+def plot_hamiltonian_density(density, xlim_q=-8.0, ylim_q=-8.0, n=200, name=None):
 
     x = jnp.linspace(-xlim_q, xlim_q, n)
     y = jnp.linspace(-ylim_q, ylim_q, n)
@@ -89,8 +89,6 @@ def plot_hamiltonian_density(density, xlim_q=-8., ylim_q=-8., n=200, name=None):
         plt.savefig(name)
     plt.show()
     plt.close()
-
-
 
 
 # def plot_logistic_regression_density(

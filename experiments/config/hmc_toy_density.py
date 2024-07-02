@@ -7,7 +7,7 @@ from ml_collections import ConfigDict
 
 
 def get_config(mode: Literal["train", "sample"] = None):
-    
+
     cfg = ConfigDict()
     cfg.seed = 42
 

@@ -41,14 +41,14 @@ class Trainer:
         self.density = density
         self.wandb_log = cfg.wandb.use
         self.checkpoint_path = os.path.join(
-            os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density.name), cfg.checkpoint.checkpoint_name
+            os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density.name),
+            cfg.checkpoint.checkpoint_name,
         )
 
         self.cfg = cfg
 
         self.init_model()
         self.create_train_steps()
-
 
     def init_model(self):
 
@@ -129,7 +129,7 @@ class Trainer:
         self.rng, ar = self.create_data_loader(self.rng)
         if self.wandb_log:
             wandb.log({"acceptance rate": ar})
-        
+
         ar_losses = []
         adv_losses = []
         for i, batch in enumerate(self.data_loader):
@@ -153,18 +153,18 @@ class Trainer:
                         "adversarial loss": adv_loss,
                     }
                 )
-        
+
         if epoch_idx % self.cfg.log.save_every == 0:
             self.save_model(epoch=epoch_idx)
-        
-        return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
 
+        return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
 
     def train_model(self):
         for epoch in tqdm(range(self.cfg.train.num_epochs)):
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
-            tqdm.write(f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}")
-  
+            tqdm.write(
+                f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"
+            )
 
     def sample(self, rng, n, burn_in, parallel_chains):
 
@@ -234,7 +234,6 @@ class TrainerLogisticRegression:
 
         self.init_model()
         self.create_train_steps()
-
 
     def init_model(self):
         discriminator = create_simple_discriminator(

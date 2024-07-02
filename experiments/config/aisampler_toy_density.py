@@ -70,7 +70,6 @@ def get_config(mode: Literal["train", "sample"] = None):
     # cfg.log.burn_in = 100
     # cfg.log.samples_to_plot = 5000
 
-
     if mode == "sample":
         cfg.sample = ConfigDict()
         cfg.sample.d = 2
