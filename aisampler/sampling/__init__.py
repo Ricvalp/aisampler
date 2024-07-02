@@ -5,6 +5,5 @@ from aisampler.sampling.metropolis_hastings_with_momentum import (
 )
 from aisampler.sampling.utils import (
     plot_samples_with_density,
-    plot_chain,
     plot_kde,
 )

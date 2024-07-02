@@ -5,7 +5,30 @@ import jax.numpy as jnp
 from absl import logging
 
 
-def mh_kernel_with_momentum(x, key, cov_p, kernel, density, parallel_chains=100):
+def mh_kernel_with_momentum(
+    x: jnp.ndarray,
+    key: jnp.ndarray,
+    cov_p: jnp.ndarray,
+    kernel: callable,
+    density: callable,
+    parallel_chains: int = 100,
+) -> tuple:
+    """
+    Metropolis-Hastings kernel with momentum for a given kernel and density.
+
+    Args:
+
+        x: jnp.ndarray
+        key: jnp.ndarray
+        cov_p: jnp.ndarray
+        kernel: callable
+        density: callable
+        parallel_chains: int
+    Returns:
+
+        tuple: Tuple of the new samples, acceptance rate, and the key.
+    """
+
     key, accept_subkey, momentum_subkey = jax.random.split(key, 3)
     x_new = kernel(x)
 
@@ -41,18 +64,37 @@ jit_mh_kernel_with_momentum = jax.jit(
 
 
 def metropolis_hastings_with_momentum(
-    kernel,
-    density,
-    d,
-    n,
-    cov_p,
-    parallel_chains=100,
-    burn_in=100,
-    rng=jax.random.PRNGKey(42),
-    initial_std=1.0,
-    starting_points=None,
-    vstack=True,
-):
+    kernel: callable,
+    density: callable,
+    d: int,
+    n: int,
+    cov_p: jnp.ndarray,
+    parallel_chains: int = 100,
+    burn_in: int = 100,
+    rng: jnp.ndarray = jax.random.PRNGKey(42),
+    initial_std: float = 1.0,
+    starting_points: jnp.ndarray = None,
+    vstack: bool = False,
+) -> tuple:
+    """
+
+    Metropolis-Hastings with momentum for a given kernel and density.
+
+    Args:
+        kernel: callable
+        density: callable
+        d: int
+        n: int
+        cov_p: jnp.ndarray
+        parallel_chains: int
+        burn_in: int
+        rng: jnp.ndarray
+        initial_std: float
+        starting_points: jnp.ndarray
+        vstack: bool
+    Returns:
+        tuple: Tuple of samples and acceptance rate.
+    """
     first_init_subkey, second_init_subkey, sampling_subkey = jax.random.split(rng, 3)
 
     if starting_points is None:

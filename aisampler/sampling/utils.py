@@ -96,30 +96,30 @@ def plot_kde(samples, name=None):
     plt.show()
 
 
-def plot_chain(samples, target_density, q_0=0.0, q_1=0.0, name=None, ar=None, **kwargs):
-    xlim_q = jnp.max(jnp.abs(samples[:, 0])) + 1.5
-    ylim_q = jnp.max(jnp.abs(samples[:, 1])) + 1.5
-    xlim_p = jnp.max(jnp.abs(samples[:, 2])) + 1.5
-    ylim_p = jnp.max(jnp.abs(samples[:, 3])) + 1.5
+# def plot_chain(samples, target_density, q_0=0.0, q_1=0.0, name=None, ar=None, **kwargs):
+#     xlim_q = jnp.max(jnp.abs(samples[:, 0])) + 1.5
+#     ylim_q = jnp.max(jnp.abs(samples[:, 1])) + 1.5
+#     xlim_p = jnp.max(jnp.abs(samples[:, 2])) + 1.5
+#     ylim_p = jnp.max(jnp.abs(samples[:, 3])) + 1.5
 
-    _, Z_q = get_hamiltonian_density_image(
-        target_density, xlim_q, ylim_q, xlim_p, ylim_p, q_0=q_0, q_1=q_1, n=100
-    )
+#     _, Z_q = get_hamiltonian_density_image(
+#         target_density, xlim_q, ylim_q, xlim_p, ylim_p, q_0=q_0, q_1=q_1, n=100
+#     )
 
-    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+#     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
 
-    if ar is not None:
-        fig.suptitle(f"Acceptance rate: {ar:.3}")
-    ax.imshow(
-        Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
-    )
-    ax.scatter(samples[:, 0], samples[:, 1], s=0.5)
-    ax.plot(samples[:, 0], samples[:, 1], **kwargs)
-    ax.set_title("q")
-    ax.set_xlabel("q1")
-    ax.set_ylabel("q2")
-    if name is not None:
-        plt.savefig(name)
-    plt.show()
+#     if ar is not None:
+#         fig.suptitle(f"Acceptance rate: {ar:.3}")
+#     ax.imshow(
+#         Z_q, extent=(-xlim_q, xlim_q, -ylim_q, ylim_q), origin="lower", cmap="viridis"
+#     )
+#     ax.scatter(samples[:, 0], samples[:, 1], s=0.5)
+#     ax.plot(samples[:, 0], samples[:, 1], **kwargs)
+#     ax.set_title("q")
+#     ax.set_xlabel("q1")
+#     ax.set_ylabel("q2")
+#     if name is not None:
+#         plt.savefig(name)
+#     plt.show()
 
-    return fig
+#     return fig

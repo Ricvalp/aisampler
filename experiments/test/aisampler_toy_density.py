@@ -14,7 +14,6 @@ from aisampler.kernels import create_henon_flow
 from aisampler.kernels.utils import get_params_from_checkpoint
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
-    plot_chain,
     plot_samples_with_density,
     plot_kde,
 )
@@ -36,19 +35,20 @@ def main(_):
     cfg = load_cfgs(_TASK_FILE)
     cfg.figure_path.mkdir(parents=True, exist_ok=True)
 
-    density = getattr(densities, cfg.target_density.name)
+    density = getattr(densities, cfg.target_density_name)
+
     density_statistics = getattr(
-        densities, "statistics_" + cfg.hmc.potential_function_name
+        densities, "statistics_" + cfg.target_density_name.replace("hamiltonian_", "")
     )
 
     checkpoint_path = os.path.join(
-        os.path.join(cfg.checkpoint_dir, cfg.target_density.name), cfg.checkpoint_name
+        os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density_name),
+        cfg.checkpoint.checkpoint_name,
     )
 
     kernel_params, discriminator_params = get_params_from_checkpoint(
         checkpoint_path=checkpoint_path,
-        checkpoint_epoch=cfg.checkpoint_epoch,
-        checkpoint_step=cfg.checkpoint_step,
+        checkpoint_epoch=cfg.checkpoint.checkpoint_epoch,
     )
 
     kernel = create_henon_flow(
@@ -60,32 +60,30 @@ def main(_):
 
     kernel_fn = jax.jit(lambda x: kernel.apply(kernel_params, x))
 
-    samples, ar, t = metropolis_hastings_with_momentum(
+    samples, ar = metropolis_hastings_with_momentum(
         kernel_fn,
         density,
         cov_p=jnp.eye(cfg.kernel.d),
         d=cfg.kernel.d,
-        parallel_chains=cfg.sample.num_parallel_chains,
-        n=cfg.sample.num_iterations,
-        burn_in=cfg.sample.burn_in,
+        parallel_chains=cfg.num_parallel_chains,
+        n=cfg.num_iterations,
+        burn_in=cfg.burn_in,
         rng=jax.random.PRNGKey(cfg.seed + 2),
         vstack=False,
     )
 
     plot_samples_with_density(
-        samples=jnp.transpose(jnp.array(samples), (1, 0, 2)),
+        samples=jnp.vstack(jnp.transpose(jnp.array(samples), (1, 0, 2))),
         target_density=density,
         ar=ar,
-        name=None,
     )
 
     plot_kde(
-        samples=jnp.transpose(jnp.array(samples), (1, 0, 2)),
-        name=cfg.figure_path / Path(f"kde_ring.png"),
+        samples=jnp.vstack(jnp.transpose(jnp.array(samples), (1, 0, 2))),
     )
 
     ess = effective_sample_size(
-        samples[None, :, :2],
+        samples[:, :, :2],
         np.array(density_statistics["mu"]),
         np.array(density_statistics["sigma"]),
     )

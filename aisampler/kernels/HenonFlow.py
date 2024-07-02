@@ -104,7 +104,18 @@ class SimpleMLP(nn.Module):
         return x
 
 
-def create_henon_flow(num_flow_layers, num_layers, num_hidden, d):
+def create_henon_flow(
+    num_flow_layers: int, num_layers: int, num_hidden: int, d: int
+) -> FlowModel:
+    """
+    Args:
+        num_flow_layers: int
+        num_layers: int
+        num_hidden: int
+        d: int
+    Returns:
+        FlowModel
+    """
     flow_layers = []
 
     flow_layers += [
