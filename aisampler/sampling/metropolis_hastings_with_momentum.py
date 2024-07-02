@@ -51,6 +51,7 @@ def metropolis_hastings_with_momentum(
     rng=jax.random.PRNGKey(42),
     initial_std=1.0,
     starting_points=None,
+    vstack=True,
 ):
     first_init_subkey, second_init_subkey, sampling_subkey = jax.random.split(rng, 3)
 
@@ -68,20 +69,12 @@ def metropolis_hastings_with_momentum(
     else:
         x = starting_points[:parallel_chains]
 
-    # logging.info("Jitting AI kernel...")
-    # time_start = time.time()
-
     jit_mh_kernel_with_momentum(
         x, sampling_subkey, cov_p, kernel, density, parallel_chains=parallel_chains
     )
 
-    # logging.info(f"Jitting done. Time taken: {time.time() - time_start}")
-
     samples = []
     ars = []
-
-    # logging.info("Sampling...")
-    # time_start = time.time()
 
     for i in range(n + burn_in):
         x, ar, sampling_subkey = jit_mh_kernel_with_momentum(
@@ -90,13 +83,10 @@ def metropolis_hastings_with_momentum(
         if i >= burn_in:
             samples.append(x)
             ars.append(ar)
-
-    # t = time.time() - time_start
-    # logging.info(f"Sampling done. Time taken: {t}")
-
-    # return jnp.transpose(jnp.array(samples), (1, 0, 2)), jnp.array(ars).mean() # , t
-
-    return jnp.vstack(samples), jnp.array(ars).mean()
+    if vstack:
+        return jnp.vstack(samples), jnp.array(ars).mean()
+    else:
+        return jnp.transpose(jnp.array(samples), (1, 0, 2)), jnp.array(ars).mean()
 
 
 @jax.jit
