@@ -19,7 +19,7 @@ from aisampler.sampling import (
     metropolis_hastings_with_momentum,
 )
 
-from aisampler.trainer.utils import SamplesDataset, numpy_collate
+from aisampler.trainers.utils import SamplesDataset, numpy_collate
 from aisampler.sampling.metrics import ess
 
 from aisampler.logistic_regression import (
@@ -41,7 +41,7 @@ class Trainer:
         self.density = density
         self.wandb_log = cfg.wandb.use
         self.checkpoint_path = os.path.join(
-            os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density.name),
+            os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density_name),
             cfg.checkpoint.checkpoint_name,
         )
 

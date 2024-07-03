@@ -1,16 +1,17 @@
 from absl import app
 from ml_collections import config_flags
+from pathlib import Path
 
 import jax
 import wandb
 
 import aisampler.toy_densities as densities
 import aisampler.sampling as sampling
-from aisampler.trainer import Trainer
+from aisampler.trainers import Trainer
 
 
 _TASK_FILE = config_flags.DEFINE_config_file(
-    "task", default="experiments/config/train_toy_density.py"
+    "task", default="experiments/config/train_aisampler_on_toy_density.py"
 )
 
 
@@ -24,13 +25,13 @@ def load_cfgs(
 
 def main(_):
     cfg = load_cfgs(_TASK_FILE)
-    cfg.figure_path.mkdir(parents=True, exist_ok=True)
-    cfg.checkpoint.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    Path(cfg.figure_path).mkdir(parents=True, exist_ok=True)
+    Path(cfg.checkpoint.checkpoint_dir).mkdir(parents=True, exist_ok=True)
 
     if cfg.wandb.use:
         wandb.init(project=cfg.wandb.project, entity=cfg.wandb.entity, config=cfg)
 
-    density = getattr(densities, cfg.target_density.name)
+    density = getattr(densities, cfg.target_density_name)
 
     densities.plot_hamiltonian_density(density)
 

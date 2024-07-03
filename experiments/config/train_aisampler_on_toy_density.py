@@ -18,14 +18,13 @@ def get_config(mode: Literal["train", "sample"] = None):
         "%Y%m%d-%H%M%S"
     )
 
-    cfg.checkpoint = ConfigDict()
-    cfg.checkpoint.checkpoint_dir = pathlib.Path("./checkpoints")
-    cfg.checkpoint.checkpoint_name = "debug"
-    cfg.checkpoint.overwrite = True
-
     # Target density
-    cfg.target_density = ConfigDict()
-    cfg.target_density.name = "ring"
+    cfg.target_density_name = "hamiltonian_ring"
+
+    cfg.checkpoint = ConfigDict()
+    cfg.checkpoint.checkpoint_dir = "./checkpoints"
+    cfg.checkpoint.checkpoint_name = "toy_density"
+    cfg.checkpoint.overwrite = True
 
     # Wandb
     cfg.wandb = ConfigDict()

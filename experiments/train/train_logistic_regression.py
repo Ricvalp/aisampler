@@ -5,15 +5,14 @@ from pathlib import Path
 import numpy as np
 
 import wandb
-from config import load_cfgs
-from trainers import TrainerLogisticRegression
+from aisampler.trainers import TrainerLogisticRegression
 
-from config import load_cfgs
-
-import logistic_regression
+import aisampler.logistic_regression as logistic_regression
 
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/train_ai_sampler_on_logistic_regression.py"
+)
 
 
 def load_cfgs(
@@ -34,7 +33,7 @@ def main(_):
 
     density = getattr(logistic_regression, cfg.dataset.name)(
         batch_size=cfg.train.num_resampling_parallel_chains,
-        mode=cfg.dataset.mode,
+        mode="train",
     )
 
     if cfg.train.bootstrap_with_hmc:

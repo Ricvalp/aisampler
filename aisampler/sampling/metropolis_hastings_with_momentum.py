@@ -74,7 +74,7 @@ def metropolis_hastings_with_momentum(
     rng: jnp.ndarray = jax.random.PRNGKey(42),
     initial_std: float = 1.0,
     starting_points: jnp.ndarray = None,
-    vstack: bool = False,
+    vstack: bool = True,
 ) -> tuple:
     """
 

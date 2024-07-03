@@ -23,24 +23,17 @@ def get_config(mode: Literal["train", "sample"] = None):
     cfg.checkpoint_name = "debug"
     cfg.overwrite = True
 
+    # Dataset
+    cfg.dataset = ConfigDict()
+    cfg.dataset.name = "Australian"
+
     # bootstrap with hmc
     cfg.hmc_sample_dir = pathlib.Path("./hmc_samples")
-
-    # tracing
-    cfg.trace_dir = pathlib.Path("./tracer")
-
-    # Restore checkpoint
-    cfg.checkpoint_epoch = 7
-    cfg.checkpoint_step = 0
-
-    # Target density
-    cfg.target_density = ConfigDict()
-    cfg.target_density.name = "ring"
 
     # Wandb
     cfg.wandb = ConfigDict()
     cfg.wandb.use = False
-    cfg.wandb.project = "adversarial-involutive-sampler-debug"
+    cfg.wandb.project = "adversarial-involutive-sampler-loggistic-regression"
     cfg.wandb.entity = "ricvalp"
 
     # Kernel
@@ -79,11 +72,6 @@ def get_config(mode: Literal["train", "sample"] = None):
     cfg.log.num_parallel_chains = 2
     cfg.log.burn_in = 100
     cfg.log.samples_to_plot = 5000
-
-    # Dataset
-    cfg.dataset = ConfigDict()
-    cfg.dataset.name = "Australian"
-    cfg.dataset.mode = "train"
 
     if mode == "sample":
         # Sample

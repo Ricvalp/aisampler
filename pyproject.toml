@@ -4,15 +4,32 @@ requires = ["setuptools", "wheel"]
 [tool.setuptools]
 py-modules = ["aisampler"]
 
-
 [project]
 name = "aisampler"
-version = "0.1.0"
+version = "0.0.1"
 description = "Ai-sampler: adversarial learning of Markov chains"
 authors = [{name = "Riccardo Valperga", email = "r.valperga@uva.nl"}]
 license = {text = "MIT License"}
 requires-python = ">= 3.10"
-dependencies = ["flax", "optax", "ml_collections", "tqdm", "matplotlib", "wandb"]
+dependencies = [
+    "jax>=0.4.13",
+    "jaxlib>=0.4.23",
+    "optax>=0.1.5",
+    "flax>=0.7.0",
+    "torch>=2.0",
+    "numpy>=1.19.5",
+    "absl-py>=0.12.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["aisampler*"]  # package names should match these glob patterns (["*"] by default)
+exclude = []  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+[tool.setuptools.dynamic]
+version = {attr = "fit_a_nef.VERSION"}
+
 
 [project.urls]
 homepage = "https://github.com/Ricvalp/aisampler"
