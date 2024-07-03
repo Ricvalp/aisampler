@@ -2,12 +2,17 @@ from absl import app
 from ml_collections import config_flags
 from pathlib import Path
 
+import jax
 import numpy as np
 
 import wandb
 from aisampler.trainers import TrainerLogisticRegression
-
 import aisampler.logistic_regression as logistic_regression
+from aisampler.logistic_regression import (
+    plot_histograms2d_logistic_regression,
+    plot_histograms_logistic_regression,
+    plot_logistic_regression_samples,
+)
 
 
 _TASK_FILE = config_flags.DEFINE_config_file(
@@ -25,42 +30,27 @@ def load_cfgs(
 
 def main(_):
     cfg = load_cfgs(_TASK_FILE)
-    cfg.figure_path.mkdir(parents=True, exist_ok=True)
-    cfg.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    Path(cfg.figure_path).mkdir(parents=True, exist_ok=True)
+    Path(cfg.checkpoint.checkpoint_dir).mkdir(parents=True, exist_ok=True)
 
     if cfg.wandb.use:
         wandb.init(project=cfg.wandb.project, entity=cfg.wandb.entity, config=cfg)
 
-    density = getattr(logistic_regression, cfg.dataset.name)(
+    density = getattr(logistic_regression, cfg.dataset_name)(
         batch_size=cfg.train.num_resampling_parallel_chains,
         mode="train",
     )
 
-    if cfg.train.bootstrap_with_hmc:
-        hmc_samples = np.load(
-            cfg.hmc_sample_dir / Path(f"hmc_samples_{cfg.dataset.name}.npy")
-        )
-        trainer = TrainerLogisticRegression(
-            cfg=cfg,
-            density=density,
-            wandb_log=cfg.wandb.use,
-            checkpoint_dir=cfg.checkpoint_dir,
-            checkpoint_name=cfg.checkpoint_name,
-            seed=cfg.seed,
-            hmc_samples=hmc_samples,
-        )
-    else:
-        trainer = TrainerLogisticRegression(
-            cfg=cfg,
-            density=density,
-            wandb_log=cfg.wandb.use,
-            checkpoint_dir=cfg.checkpoint_dir,
-            checkpoint_name=cfg.checkpoint_name,
-            seed=cfg.seed,
-            hmc_samples=None,
-        )
+    trainer = TrainerLogisticRegression(
+        cfg=cfg,
+        density=density,
+    )
 
     trainer.train_model()
+
+    samples, ar = trainer.sample(
+        rng=jax.random.PRNGKey(42), n=1000, burn_in=500, parallel_chains=10
+    )
 
 
 if __name__ == "__main__":

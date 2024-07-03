@@ -10,8 +10,7 @@ from ml_collections import config_flags
 import aisampler.toy_densities as densities
 
 from aisampler.discriminators import get_discriminator_function, plot_discriminator
-from aisampler.kernels import create_henon_flow
-from aisampler.kernels.utils import get_params_from_checkpoint
+from aisampler.kernels import create_henon_flow, get_params_from_checkpoint, load_config
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
     plot_samples_with_density,
@@ -20,7 +19,9 @@ from aisampler.sampling import (
 from aisampler.sampling.metrics import effective_sample_size
 
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/config_sample_aisampler_toy_density.py"
+)
 
 
 def load_cfgs(
@@ -42,9 +43,16 @@ def main(_):
     )
 
     checkpoint_path = os.path.join(
-        os.path.join(cfg.checkpoint.checkpoint_dir, cfg.target_density_name),
-        cfg.checkpoint.checkpoint_name,
+        cfg.checkpoint.checkpoint_dir, cfg.target_density_name
     )
+
+    config = load_config(
+        Path(checkpoint_path) / "cfg.json",
+    )
+
+    assert config.target_density_name == cfg.target_density_name  # sanity check
+
+    kernel_config = config.kernel
 
     kernel_params, discriminator_params = get_params_from_checkpoint(
         checkpoint_path=checkpoint_path,
@@ -52,10 +60,10 @@ def main(_):
     )
 
     kernel = create_henon_flow(
-        num_flow_layers=cfg.kernel.num_flow_layers,
-        num_hidden=cfg.kernel.num_hidden,
-        num_layers=cfg.kernel.num_layers,
-        d=cfg.kernel.d,
+        num_flow_layers=kernel_config.num_flow_layers,
+        num_hidden=kernel_config.num_hidden,
+        num_layers=kernel_config.num_layers,
+        d=kernel_config.d,
     )
 
     kernel_fn = jax.jit(lambda x: kernel.apply(kernel_params, x))
@@ -63,8 +71,8 @@ def main(_):
     samples, ar = metropolis_hastings_with_momentum(
         kernel_fn,
         density,
-        cov_p=jnp.eye(cfg.kernel.d),
-        d=cfg.kernel.d,
+        cov_p=jnp.eye(kernel_config.d),
+        d=kernel_config.d,
         parallel_chains=cfg.num_parallel_chains,
         n=cfg.num_iterations,
         burn_in=cfg.burn_in,
@@ -89,7 +97,7 @@ def main(_):
     )
 
     for i in range(2):
-        logging.info(f"their ESS w_{i}: {ess[i]}")
+        logging.info(f"ESS w_{i}: {ess[i]}")
 
 
 if __name__ == "__main__":

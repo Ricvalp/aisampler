@@ -3,6 +3,8 @@ import orbax
 import orbax.checkpoint
 from pathlib import Path
 from typing import Union
+import json
+from ml_collections import ConfigDict
 
 
 def get_params_from_checkpoint(
@@ -22,3 +24,9 @@ def get_params_from_checkpoint(
     L_state = ckpt["L"]
     D_state = ckpt["D"]
     return {"params": L_state["params"]}, {"params": {"D": D_state["params"]}}
+
+
+def load_config(filename):
+    with open(filename, "r") as f:
+        cfg = json.load(f)
+    return ConfigDict(cfg)

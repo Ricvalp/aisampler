@@ -3,7 +3,7 @@ outputs
 checkpoints
 testing_normalizing_flows
 old_checkpoints
-hmc_samples
+*hmc_samples*
 wandb
 
 .vscode

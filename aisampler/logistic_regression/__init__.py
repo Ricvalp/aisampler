@@ -4,8 +4,6 @@ from aisampler.logistic_regression.densities import (
     grad_U,
     hamiltonian,
     normalize_covariates,
-    plot_density_logistic_regression,
-    plot_gradients_logistic_regression_density,
 )
 from aisampler.logistic_regression.utils import (
     plot_histograms2d_logistic_regression,

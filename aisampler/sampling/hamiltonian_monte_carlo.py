@@ -72,6 +72,7 @@ def hmc(
     burn_in=100,
     initial_std=1.0,
     rng=jax.random.PRNGKey(42),
+    vstack=True,
 ):
     first_init_subkey, second_init_subkey, sampling_subkey = jax.random.split(rng, 3)
 
@@ -97,12 +98,9 @@ def hmc(
         grad_potential_fn,
         parallel_chains=parallel_chains,
     )
-    logging.info(f"Jitting done. Time taken: {time.time() - t}")
 
     samples = []
     ars = []
-    logging.info("Sampling...")
-    time_start = time.time()
     for i in range(n + burn_in):
         x, ar, sampling_subkey = jit_hmc_kernel(
             x,
@@ -117,9 +115,8 @@ def hmc(
         if i >= burn_in:
             samples.append(x)
             ars.append(ar)
-    t = time.time() - time_start
-    logging.info(f"Sampling done. Time taken: {t}")
 
-    # return np.transpose(np.array(samples), (1, 0, 2)), np.array(ars).mean(), t
-
-    return np.vstack(samples), np.array(ars).mean(), t
+    if vstack:
+        return np.vstack(samples), np.array(ars).mean()
+    else:
+        np.transpose(np.array(samples), (1, 0, 2)), np.array(ars).mean()

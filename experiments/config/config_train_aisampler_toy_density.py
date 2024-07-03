@@ -6,7 +6,7 @@ from absl import logging
 from ml_collections import ConfigDict
 
 
-def get_config(mode: Literal["train", "sample"] = None):
+def get_config():
     if mode is None:
         mode = "train"
         logging.info(f"No mode provided, using '{mode}' as default")
@@ -14,30 +14,20 @@ def get_config(mode: Literal["train", "sample"] = None):
     cfg = ConfigDict()
     cfg.seed = 42
 
-    cfg.data_for_plots_dir = pathlib.Path("./plots/data_for_plots")
-
-    cfg.figure_path = pathlib.Path("./figures") / datetime.now().strftime(
-        "%Y%m%d-%H%M%S"
-    )
-    cfg.checkpoint_dir = pathlib.Path("./checkpoints")
-    cfg.checkpoint_name = "debug"
-    cfg.overwrite = True
-
-    # bootstrap with hmc
-    cfg.hmc_sample_dir = pathlib.Path("./hmc_samples")
-
-    # Restore checkpoint
-    cfg.checkpoint_epoch = 7
-    cfg.checkpoint_step = 0
+    cfg.figure_path = "./figures/" + datetime.now().strftime("%Y%m%d-%H%M%S")
 
     # Target density
-    cfg.target_density = ConfigDict()
-    cfg.target_density.name = "ring"
+    cfg.target_density_name = "hamiltonian_ring"
+
+    cfg.checkpoint = ConfigDict()
+    cfg.checkpoint.checkpoint_dir = "./checkpoints"
+    cfg.checkpoint.overwrite = True
+    cfg.checkpoint.save_every = 50
 
     # Wandb
     cfg.wandb = ConfigDict()
     cfg.wandb.use = False
-    cfg.wandb.project = "adversarial-involutive-sampler-debug"
+    cfg.wandb.project = "adversarial-involutive-sampler-toy-density"
     cfg.wandb.entity = "ricvalp"
 
     # Kernel
@@ -57,28 +47,18 @@ def get_config(mode: Literal["train", "sample"] = None):
 
     # Train
     cfg.train = ConfigDict()
+    cfg.train.init = "glorot_normal"
     cfg.train.kernel_learning_rate = 1e-4
     cfg.train.discriminator_learning_rate = 1e-4
-    cfg.train.num_resampling_steps = 5000
-    cfg.train.num_resampling_parallel_chains = 100
+    cfg.train.num_resampling_steps = 100
+    cfg.train.num_resampling_parallel_chains = 500
     cfg.train.resampling_burn_in = 0
     cfg.train.batch_size = 4096
-    cfg.train.num_epochs = 150
-    cfg.train.num_epochs_hmc_bootstrap = 50
+    cfg.train.num_epochs = 50
     cfg.train.num_AR_steps = 1
     cfg.train.num_adversarial_steps = 1
-    cfg.train.bootstrap_with_hmc = True
-
-    # Log
-    cfg.log = ConfigDict()
-    cfg.log.log_every = 500
-    cfg.log.num_steps = 10000
-    cfg.log.num_parallel_chains = 2
-    cfg.log.burn_in = 100
-    cfg.log.samples_to_plot = 5000
 
     if mode == "sample":
-        # Sample
         cfg.sample = ConfigDict()
         cfg.sample.d = 2
         cfg.sample.num_parallel_chains = 500
@@ -89,7 +69,6 @@ def get_config(mode: Literal["train", "sample"] = None):
         cfg.sample.save_samples = False
         cfg.sample.hmc_sample_dir = pathlib.Path("./hmc_samples")
 
-        # HMC
         cfg.hmc = ConfigDict()
         cfg.hmc.potential_function_name = "mog6"
         cfg.hmc.num_steps = 40

@@ -5,10 +5,8 @@
 Creators: [Riccardo Valperga](https://twitter.com/RValperga), [Evgenii Egorov](https://github.com/evgenii-egorov)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![Read the docs](https://img.shields.io/badge/docs-latest-blue)](https://fit-a-nef.readthedocs.io/en/latest/)
 ![Schema](assets/fig-1.png)
 
 📚 This code is for reproducing the experiments in:  [Ai-sampler: Adversarial Learning of Markov kernels with involutive maps](https://arxiv.org/abs/2406.02490) <img src="assets/arxiv.png" width=20px>.
@@ -40,8 +38,14 @@ The repository is structured as follows:
 To train the `Ai-sampler` on the **2D densities**, from the root folder run:
 
 ```bash
-python experiments/training/train_toy_density.py --task.target_density.name=hamiltonian_mog2 --task.checkpoint.checkpoint_dir=./checkpoints
+python experiments/training/train_toy_density.py --task.target_density.name=hamiltonian_mog2  --task.train.num_epochs=51 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoints.save_every=50
 ```
+Checkpoints are saved every `save_every` epochs into `checkpoint_dir`. To sample using the trained `Ai-sampler` run:
+
+```bash
+python experiments/test/sample_aisampler_toy_density.py --task.target_density_name=hamiltonian_mog2 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.checkpoint_epoch=49 --task.num_parallel_chains=10 --task.num_iterations=1000 --task.burn_in=100
+```
+where `num_parallel_chains` sets the number of Markov chains run in parallel, `num_iterations` the length of the chains (after `burn_in`).
 
 ## Citing
 

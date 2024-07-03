@@ -7,27 +7,21 @@ import numpy as np
 from absl import app, logging
 from ml_collections import config_flags
 
-import densities
-import logistic_regression
-from config import load_cfgs
-from densities import plot_hamiltonian_density, plot_hamiltonian_density_only_q
-from discriminator_models import get_discriminator_function, plot_discriminator
-from kernel_models import create_henon_flow
-from kernel_models.utils import get_params_from_checkpoint
-from logistic_regression import (
-    plot_first_kernel_iteration,
+import aisampler.logistic_regression as logistic_regression
+from aisampler.kernels import create_henon_flow, get_params_from_checkpoint, load_config
+from aisampler.logistic_regression import (
     plot_histograms2d_logistic_regression,
     plot_histograms_logistic_regression,
     plot_logistic_regression_samples,
 )
-from sampling import (
+from aisampler.sampling import (
     metropolis_hastings_with_momentum,
-    plot_chain,
-    plot_samples_with_density,
 )
-from sampling.metrics import effective_sample_size, ess, gelman_rubin_r
+from aisampler.sampling.metrics import effective_sample_size
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/config_sample_aisampler_logistic_regression.py"
+)
 
 
 def load_cfgs(
@@ -42,57 +36,64 @@ def main(_):
     cfg = load_cfgs(_TASK_FILE)
     cfg.figure_path.mkdir(parents=True, exist_ok=True)
 
-    density = getattr(logistic_regression, cfg.dataset.name)(
-        batch_size=cfg.sample.num_parallel_chains,
+    density = getattr(logistic_regression, cfg.dataset_name)(
+        batch_size=cfg.num_parallel_chains,
         mode="train",
     )
 
-    hmc_samples = np.load(
-        cfg.hmc_sample_dir / Path(f"hmc_samples_{cfg.dataset.name}.npy")
-    )
+    checkpoint_path = os.path.join(cfg.checkpoint.checkpoint_dir, cfg.dataset_name)
 
-    checkpoint_path = os.path.join(
-        os.path.join(cfg.checkpoint_dir, cfg.dataset.name), cfg.checkpoint_name
-    )
+    # config = load_config(
+    #     Path(checkpoint_path) / "cfg.json",
+    # )
+
+    # assert config.dataset_name == cfg.dataset_name # sanity check
+
+    # kernel_config = config.kernel
 
     kernel_params, discriminator_params = get_params_from_checkpoint(
         checkpoint_path=checkpoint_path,
-        checkpoint_epoch=cfg.checkpoint_epoch,
-        checkpoint_step=cfg.checkpoint_step,
-    )
-
-    discriminator_fn = get_discriminator_function(
-        discriminator_parameters=discriminator_params,
-        num_layers_psi=cfg.discriminator.num_layers_psi,
-        num_hidden_psi=cfg.discriminator.num_hidden_psi,
-        num_layers_eta=cfg.discriminator.num_layers_eta,
-        num_hidden_eta=cfg.discriminator.num_hidden_eta,
-        activation=cfg.discriminator.activation,
-        d=density.dim,
+        checkpoint_epoch=cfg.checkpoint.checkpoint_epoch,
     )
 
     kernel = create_henon_flow(
-        num_flow_layers=cfg.kernel.num_flow_layers,
-        num_hidden=cfg.kernel.num_hidden,
-        num_layers=cfg.kernel.num_layers,
+        num_flow_layers=5,  # kernel_config.num_flow_layers,
+        num_hidden=32,  # kernel_config.num_hidden,
+        num_layers=2,  # kernel_config.num_layers,
         d=density.dim,
     )
 
     kernel_fn = jax.jit(lambda x: kernel.apply(kernel_params, x))
 
-    samples, ar, t = metropolis_hastings_with_momentum(
+    logging.info(f"Sampling from {cfg.dataset_name} density...")
+
+    samples, ar = metropolis_hastings_with_momentum(
         kernel_fn,
         density,
         cov_p=jnp.eye(density.dim),
         d=density.dim,
-        parallel_chains=cfg.sample.num_parallel_chains,
-        n=cfg.sample.num_iterations,
-        burn_in=cfg.sample.burn_in,
+        parallel_chains=cfg.num_parallel_chains,
+        n=cfg.num_iterations,
+        burn_in=cfg.burn_in,
         rng=jax.random.PRNGKey(cfg.seed),
-        starting_points=hmc_samples[:],
+        starting_points=None,  # hmc_samples[:],
+        initial_std=0.1,
     )
 
-    logging.info(f"Acceptance rate: {ar}")
+    logging.info(f"Sampling done. Acceptance rate: {ar}")
+
+    plot_logistic_regression_samples(
+        samples,
+        density,
+    )
+
+    plot_histograms_logistic_regression(
+        samples,
+    )
+
+    plot_histograms2d_logistic_regression(
+        samples,
+    )
 
     print("shape: ", samples.shape)
     print("mean: ", np.mean(samples, axis=0)[: density.dim])
@@ -100,7 +101,7 @@ def main(_):
     print("std: ", np.std(samples, axis=0)[density.dim :])
     print("gt std: ", density.std())
 
-    test_density = getattr(logistic_regression, cfg.dataset.name)(
+    test_density = getattr(logistic_regression, cfg.dataset_name)(
         batch_size=samples.shape[0],
         mode="test",
     )
@@ -112,7 +113,8 @@ def main(_):
         score[i] = jax.scipy.special.logsumexp(
             -test_density.sigmoid(v, x, y, test_density.x_dim, test_density.y_dim)
         ) - jnp.log(v.shape[0])
-    print("average predictive posterior: ", score.mean())
+
+    logging.info(f"Average predictive posterior: {score.mean()}")
 
 
 if __name__ == "__main__":
