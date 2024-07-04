@@ -21,21 +21,20 @@ Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperg
 
 ### Installation
 
-To use this library, simply clone the repository and run:
+To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing the GPU-supported [Jax](https://jax.readthedocs.io/en/latest/installation.html) and CPU-supported [Pytorch](https://pytorch.org/get-started/locally/).
+
+To use this library, simply clone the repository and install the dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+then install the library by running
 
 ```bash
 pip install .
 ```
 
-This will install the `Ai-sampler` library and all its dependencies. To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing them first (see instructions on the official [Jax](https://jax.readthedocs.io/en/latest/installation.html) and [Pytorch](https://pytorch.org/get-started/locally/)), and then run the command above.
-
-**Note**: you don't need to install Pytorch with GPU support. For compatibility, we reccomend to install torch with cpu support only by running:
-
-```bash
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-```
-
-You can install `wandb` for better logging. 
+**Note**: the library supports `wandb` for better logging.
 
 ### Repository structure
 
