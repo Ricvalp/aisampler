@@ -380,7 +380,7 @@ class TrainerLogisticRegression:
                 f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"
             )
             if epoch % self.cfg.checkpoint.save_every == 0:
-                self.save_model(epoch=epoch)
+                self.save_model(epoch=epoch - self.cfg.hmc_bootstrapping.num_epochs)
                 _, ar = self.sample(
                     rng=subkey,
                     n=self.cfg.train.num_resampling_steps,
