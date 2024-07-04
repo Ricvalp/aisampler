@@ -4,7 +4,6 @@ from pathlib import Path
 
 import jax
 
-# try importing wandb
 try:
     import wandb
 except ImportError:
