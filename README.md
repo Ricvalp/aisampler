@@ -36,8 +36,6 @@ pip install .
 
 **Note**: the library supports `wandb` for better logging.
 
----------------
-
 ### Repository structure
 
 The repository is structured as follows:
@@ -47,8 +45,6 @@ The repository is structured as follows:
 - `./experiments`. **Collection** of the experiments.
 - - `/train`. Scripts for training the `Ai-sampler`.
 - - `/test`. Scripts for sampling with the trainied `Ai-sampler` and with HMC.
-
---------------
 
 ### Usage
 
