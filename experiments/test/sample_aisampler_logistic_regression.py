@@ -78,18 +78,25 @@ def main(_):
         rng=jax.random.PRNGKey(cfg.seed),
         starting_points=None,
         initial_std=0.1,
+        vstack=False,
     )
 
     logging.info(f"Sampling done. Acceptance rate: {ar}")
 
-    ess = effective_sample_size(
-        samples[:, :, : density.dim],
-        np.array(density.mean()),
-        np.array(density.std()),
-    )
+    # Compute ESS
 
-    for i in range(density.dim):
-        logging.info(f"ESS w_{i}: {ess[i]}")
+    # ess = effective_sample_size(
+    #     samples[:, :, : density.dim],
+    #     np.array(density.mean()),
+    #     np.array(density.std()),
+    # )
+
+    # for i in range(density.dim):
+    #     logging.info(f"ESS w_{i}: {ess[i]}")
+
+    # Plot
+
+    samples = np.vstack(np.transpose(np.array(samples), (1, 0, 2)))[:, : density.dim]
 
     plot_logistic_regression_samples(
         samples,
@@ -120,14 +127,12 @@ def main(_):
         batch_size=samples.shape[0],
         mode="test",
     )
-    v = jnp.concatenate(
-        [samples[10:100, i, : test_density.dim] for i in range(50)], dtype=jnp.float64
-    )
+
     score = np.zeros(test_density.data[0].shape[0])
     for i, (x, y) in enumerate(zip(test_density.data[0], test_density.labels[0])):
         score[i] = jax.scipy.special.logsumexp(
-            -test_density.sigmoid(v, x, y, test_density.x_dim, test_density.y_dim)
-        ) - jnp.log(v.shape[0])
+            -test_density.sigmoid(samples, x, y, test_density.x_dim, test_density.y_dim)
+        ) - jnp.log(samples.shape[0])
 
     logging.info(f"Average predictive posterior: {score.mean()}")
 
