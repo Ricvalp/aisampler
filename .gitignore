@@ -6,6 +6,8 @@ old_checkpoints
 *hmc_samples*
 wandb
 
+commented_code.py
+
 .vscode
 
 # Byte-compiled / optimized / DLL files
