@@ -36,6 +36,8 @@ pip install .
 
 **Note**: the library supports `wandb` for better logging.
 
+---------------
+
 ### Repository structure
 
 The repository is structured as follows:
@@ -45,6 +47,8 @@ The repository is structured as follows:
 - `./experiments`. **Collection** of the experiments.
 - - `/train`. Scripts for training the `Ai-sampler`.
 - - `/test`. Scripts for sampling with the trainied `Ai-sampler` and with HMC.
+
+--------------
 
 ### Usage
 
@@ -59,8 +63,6 @@ Checkpoints are saved every `save_every` epochs into `checkpoint_dir`. To sample
 python experiments/test/sample_aisampler_toy_density.py --task.target_density_name=hamiltonian_mog2 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.checkpoint_epoch=50 --task.num_parallel_chains=10 --task.num_iterations=1000 --task.burn_in=100
 ```
 where `num_parallel_chains` sets the number of Markov chains run in parallel, `num_iterations` the length of the chains (after `burn_in`).
-
------------
 
 To train the `Ai-sampler` on the **Bayesian logistic regression posterior**, from the root folder run:
 
