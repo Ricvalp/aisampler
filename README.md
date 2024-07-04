@@ -7,13 +7,13 @@ Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperg
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
-<!-- ![Schema](assets/time-reversibility.png) -->
+![Schema](assets/fig1.png)
 
-<div style="display: flex; flex-direction: row; align-items: flex-start;">
+<!-- <div style="display: flex; flex-direction: row; align-items: flex-start;">
   <img src="assets/jumps_mog2.png" alt="Another Figure" style="width: 25%; margin-right: 10px;">
   <img src="assets/time-reversibility.png" alt="Schema" style="width: 36%; margin-right: 10px;">
   <img src="assets/jumps_mog6.png" alt="Another Figure" style="width: 25%; margin-right: 10px;">
-</div>
+</div> -->
 
 📚 This code is for reproducing the experiments in:  [Ai-sampler: Adversarial Learning of Markov kernels with involutive maps](https://arxiv.org/abs/2406.02490) <img src="assets/arxiv.png" width=20px>.
 
