@@ -13,7 +13,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import json
 
-import wandb
+try:
+    import wandb
+except ImportError:
+    wandb = None
+
 from aisampler.discriminators import create_simple_discriminator
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
@@ -162,7 +166,7 @@ class Trainer:
         return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
 
     def train_model(self):
-        for epoch in tqdm(range(self.cfg.train.num_epochs)):
+        for epoch in tqdm(range(1, self.cfg.train.num_epochs)):
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
             tqdm.write(
                 f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"

@@ -26,3 +26,5 @@ from aisampler.toy_densities.ring5 import (
 from aisampler.toy_densities.utils import (
     plot_hamiltonian_density,
 )
+
+VERSION = "0.0.1"

@@ -3,7 +3,12 @@ from ml_collections import config_flags
 from pathlib import Path
 
 import jax
-import wandb
+
+# try importing wandb
+try:
+    import wandb
+except ImportError:
+    wandb = None
 
 import aisampler.toy_densities as densities
 import aisampler.sampling as sampling

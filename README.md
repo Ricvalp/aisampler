@@ -27,7 +27,15 @@ To use this library, simply clone the repository and run:
 pip install .
 ```
 
-This will install the `Ai-sampler` library and all its dependencies. To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing them first (see instructions on the official [Jax](https://jax.readthedocs.io/en/latest/installation.html) and [Pytorch](https://pytorch.org/get-started/locally/)), and then run the command above. You can install `wandb` for better logging. 
+This will install the `Ai-sampler` library and all its dependencies. To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing them first (see instructions on the official [Jax](https://jax.readthedocs.io/en/latest/installation.html) and [Pytorch](https://pytorch.org/get-started/locally/)), and then run the command above.
+
+**Note**: you don't need to install Pytorch with GPU support. For compatibility, we reccomend to install torch with cpu support only by running:
+
+```bash
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+
+You can install `wandb` for better logging. 
 
 ### Repository structure
 
@@ -44,12 +52,12 @@ The repository is structured as follows:
 To train the `Ai-sampler` on the **2D densities**, from the root folder run:
 
 ```bash
-python experiments/training/train_toy_density.py --task.target_density.name=hamiltonian_mog2  --task.train.num_epochs=51 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoints.save_every=50
+python experiments/train/train_toy_density.py --task.target_density_name=hamiltonian_mog2  --task.train.num_epochs=51 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.save_every=50
 ```
 Checkpoints are saved every `save_every` epochs into `checkpoint_dir`. To sample using the trained `Ai-sampler` run:
 
 ```bash
-python experiments/test/sample_aisampler_toy_density.py --task.target_density_name=hamiltonian_mog2 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.checkpoint_epoch=49 --task.num_parallel_chains=10 --task.num_iterations=1000 --task.burn_in=100
+python experiments/test/sample_aisampler_toy_density.py --task.target_density_name=hamiltonian_mog2 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.checkpoint_epoch=50 --task.num_parallel_chains=10 --task.num_iterations=1000 --task.burn_in=100
 ```
 where `num_parallel_chains` sets the number of Markov chains run in parallel, `num_iterations` the length of the chains (after `burn_in`).
 

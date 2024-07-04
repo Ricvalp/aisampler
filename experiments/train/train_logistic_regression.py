@@ -5,7 +5,12 @@ from pathlib import Path
 import jax
 import numpy as np
 
-import wandb
+try:
+    import wandb
+except ImportError:
+    wandb = None
+
+
 from aisampler.trainers import TrainerLogisticRegression
 import aisampler.logistic_regression as logistic_regression
 from aisampler.logistic_regression import (
