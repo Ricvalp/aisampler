@@ -160,6 +160,9 @@ class BayesianLogisticRegression(Energy):
         )  # ll.shape = [chain_length] = [5000]
         return ll
 
+    def new_instance(self, new_batch_size):
+        return self.__class__(name=self.name, batch_size=new_batch_size, mode=self.mode)
+
     @staticmethod
     def mean():
         return None

@@ -14,6 +14,7 @@ class German(BayesianLogisticRegression):
 
         super(German, self).__init__(data, labels, batch_size=batch_size, mode=mode)
         self.name = name
+        self.mode = mode
 
     @staticmethod
     def mean():

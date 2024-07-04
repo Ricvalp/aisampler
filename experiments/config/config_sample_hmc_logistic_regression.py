@@ -6,7 +6,7 @@ from absl import logging
 from ml_collections import ConfigDict
 
 
-def get_config(mode=None):
+def get_config():
 
     cfg = ConfigDict()
     cfg.seed = 42
@@ -17,10 +17,10 @@ def get_config(mode=None):
 
     cfg.hmc_sample_dir = pathlib.Path("./hmc_samples")
 
-    cfg.dataset_name = "Australian"
+    cfg.dataset_name = "Heart"
     cfg.d = 2
-    cfg.num_parallel_chains = 500
-    cfg.num_iterations = 1000  # after burn-in
+    cfg.num_parallel_chains = 10
+    cfg.num_iterations = 5000  # after burn-in
     cfg.burn_in = 1000
     cfg.num_steps = 40
     cfg.step_size = 0.05

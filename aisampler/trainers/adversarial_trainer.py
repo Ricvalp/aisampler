@@ -20,6 +20,9 @@ from aisampler.sampling import (
     metropolis_hastings_with_momentum,
 )
 
+from aisampler.sampling import hmc
+
+
 from aisampler.trainers.utils import SamplesDataset, numpy_collate
 from aisampler.sampling.metrics import ess
 
@@ -298,15 +301,14 @@ class TrainerLogisticRegression:
 
     def create_data_loader_with_hmc(self, key):
 
-        hmc_samples_file = f"./data/hmc_samples/{self.cfg.dataset_name}.npy"
+        Path(f"./data/hmc_samples").mkdir(exist_ok=True)
+        hmc_samples_file = Path(f"./data/hmc_samples/{self.cfg.dataset_name}.npy")
+
         if os.path.exists(hmc_samples_file):
             hmc_samples = np.load(hmc_samples_file)
         else:
-            hmc_samples, _ = sample_with_hmc(
-                rng=key,
-                n=1000,  # self.cfg.train.num_resampling_steps,
-                burn_in=1000,  # self.cfg.train.resampling_burn_in,
-                parallel_chains=100,  # self.cfg.train.num_resampling_parallel_chains,
+            hmc_samples = sample_with_hmc(
+                density=self.density, hmc_bootstrapping_cfg=self.cfg.hmc_bootstrapping
             )
             np.save(hmc_samples_file, hmc_samples)
 
@@ -323,11 +325,11 @@ class TrainerLogisticRegression:
         return key, -1.0
 
     def train_epoch(self, epoch_idx):
-        if self.cfg.train.bootstrap_with_hmc and epoch_idx == 0:
+        if self.cfg.hmc_bootstrapping and epoch_idx == 0:
             self.rng, ar = self.create_data_loader_with_hmc(self.rng)
         elif (
-            not self.cfg.train.bootstrap_with_hmc
-            or epoch_idx > self.cfg.train.num_epochs_hmc_bootstrap
+            not self.cfg.hmc_bootstrapping
+            or epoch_idx > self.cfg.hmc_bootstrapping.num_epochs
         ):
             self.rng, ar = self.create_data_loader(self.rng)
         else:
@@ -360,7 +362,7 @@ class TrainerLogisticRegression:
 
     def train_model(self):
         for epoch in tqdm(
-            range(self.cfg.train.num_epochs_hmc_bootstrap + self.cfg.train.num_epochs)
+            range(self.cfg.hmc_bootstrapping.num_epochs + self.cfg.train.num_epochs)
         ):
             rng, subkey = jax.random.split(self.rng)
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
@@ -537,5 +539,28 @@ def adversarial_loss(phi_params, D_state, L_state, batch):
     return (r(Dx) * jnp.log(r(Dx))).mean()
 
 
-def sample_with_hmc(rng, n, burn_in, parallel_chains):
-    pass
+def sample_with_hmc(density, hmc_bootstrapping_cfg):
+
+    logging.info(f"Sampling with hmc...")
+
+    hmc_density = density.new_instance(
+        new_batch_size=hmc_bootstrapping_cfg.num_parallel_chains,
+    )
+
+    samples, ar = hmc(
+        density=hmc_density,
+        grad_potential_fn=density.get_grad_energy_fn(),
+        cov_p=jnp.eye(density.dim) * 1.0,
+        d=density.dim,
+        parallel_chains=hmc_bootstrapping_cfg.num_parallel_chains,
+        num_steps=hmc_bootstrapping_cfg.num_steps,
+        step_size=hmc_bootstrapping_cfg.step_size,
+        n=hmc_bootstrapping_cfg.num_iterations,
+        burn_in=hmc_bootstrapping_cfg.burn_in,
+        initial_std=hmc_bootstrapping_cfg.initial_std,
+        rng=jax.random.PRNGKey(hmc_bootstrapping_cfg.seed),
+    )
+
+    logging.info(f"Sampling with hmc done. Acceptance rate: {ar}")
+
+    return samples

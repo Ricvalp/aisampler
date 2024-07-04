@@ -12,9 +12,11 @@ from aisampler.logistic_regression import (
     plot_histograms_logistic_regression,
     plot_logistic_regression_samples,
 )
-from aisampler.sampling import hmc
+from aisampler.sampling import hmc, effective_sample_size
 
-_TASK_FILE = config_flags.DEFINE_config_file("task", default="config/config.py")
+_TASK_FILE = config_flags.DEFINE_config_file(
+    "task", default="experiments/config/config_sample_hmc_logistic_regression.py"
+)
 
 
 def load_cfgs(
@@ -50,9 +52,37 @@ def main(_):
         burn_in=cfg.burn_in,
         initial_std=0.1,
         rng=jax.random.PRNGKey(cfg.seed),
+        vstack=False,
     )
 
     logging.info(f"Sampling done. Acceptance rate: {ar}")
+
+    # Compute ESS
+
+    ess = effective_sample_size(
+        samples[:, :, : density.dim],
+        np.array(density.mean()),
+        np.array(density.std()),
+    )
+
+    for i in range(density.dim):
+        logging.info(f"ESS w_{i}: {ess[i]}")
+
+    # Plot
+
+    samples = np.vstack(np.transpose(np.array(samples), (1, 0, 2)))
+
+    np.set_printoptions(linewidth=200, precision=4, suppress=True)
+    print(
+        "MEAN:    ",
+        np.array2string(np.mean(samples, axis=0)[: density.dim], separator=","),
+    )
+    print("GT MEAN: ", np.array2string(density.mean(), separator=","))
+    print(
+        "STD:    ",
+        np.array2string(np.std(samples, axis=0)[: density.dim], separator=","),
+    )
+    print("GT STD: ", np.array2string(density.std(), separator=","))
 
     plot_logistic_regression_samples(
         samples,
@@ -64,17 +94,6 @@ def main(_):
     )
 
     plot_histograms2d_logistic_regression(
-        samples,
-    )
-
-    print("shape: ", samples.shape)
-    print("mean: ", np.mean(samples, axis=0)[: density.dim])
-    print("gt mean: ", density.mean())
-    print("std: ", np.std(samples, axis=0)[density.dim :])
-    print("gt std: ", density.std())
-
-    np.save(
-        f"./data/hmc_samples/{cfg.dataset_name}.npy",
         samples,
     )
 

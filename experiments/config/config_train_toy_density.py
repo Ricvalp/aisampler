@@ -1,15 +1,8 @@
-import pathlib
 from datetime import datetime
-from typing import Literal
-
-from absl import logging
 from ml_collections import ConfigDict
 
 
 def get_config():
-    if mode is None:
-        mode = "train"
-        logging.info(f"No mode provided, using '{mode}' as default")
 
     cfg = ConfigDict()
     cfg.seed = 42
@@ -54,24 +47,8 @@ def get_config():
     cfg.train.num_resampling_parallel_chains = 500
     cfg.train.resampling_burn_in = 0
     cfg.train.batch_size = 4096
-    cfg.train.num_epochs = 50
+    cfg.train.num_epochs = 51
     cfg.train.num_AR_steps = 1
     cfg.train.num_adversarial_steps = 1
-
-    if mode == "sample":
-        cfg.sample = ConfigDict()
-        cfg.sample.d = 2
-        cfg.sample.num_parallel_chains = 500
-        cfg.sample.num_iterations = 1000  # after burn-in
-        cfg.sample.burn_in = 1000
-
-        cfg.sample.average_results_over_trials = 5
-        cfg.sample.save_samples = False
-        cfg.sample.hmc_sample_dir = pathlib.Path("./hmc_samples")
-
-        cfg.hmc = ConfigDict()
-        cfg.hmc.potential_function_name = "mog6"
-        cfg.hmc.num_steps = 40
-        cfg.hmc.step_size = 0.05
 
     return cfg

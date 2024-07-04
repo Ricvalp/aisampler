@@ -21,6 +21,6 @@ def get_config(mode: Literal["train", "sample"] = None):
     cfg.step_size = 0.05
     cfg.num_iterations = 1000
     cfg.burn_in = 500
-    cfg.num_parallel_chains = 10
+    cfg.num_parallel_chains = 1
 
     return cfg

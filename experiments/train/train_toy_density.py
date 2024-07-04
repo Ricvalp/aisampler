@@ -11,7 +11,7 @@ from aisampler.trainers import Trainer
 
 
 _TASK_FILE = config_flags.DEFINE_config_file(
-    "task", default="experiments/config/config_train_aisampler_toy_density.py"
+    "task", default="experiments/config/config_train_toy_density.py"
 )
 
 

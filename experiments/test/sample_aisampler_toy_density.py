@@ -80,6 +80,15 @@ def main(_):
         vstack=False,
     )
 
+    ess = effective_sample_size(
+        samples[:, :, :2],
+        np.array(density_statistics["mu"]),
+        np.array(density_statistics["sigma"]),
+    )
+
+    for i in range(2):
+        logging.info(f"ESS w_{i}: {ess[i]}")
+
     plot_samples_with_density(
         samples=jnp.vstack(jnp.transpose(jnp.array(samples), (1, 0, 2))),
         target_density=density,
@@ -89,15 +98,6 @@ def main(_):
     plot_kde(
         samples=jnp.vstack(jnp.transpose(jnp.array(samples), (1, 0, 2))),
     )
-
-    ess = effective_sample_size(
-        samples[:, :, :2],
-        np.array(density_statistics["mu"]),
-        np.array(density_statistics["sigma"]),
-    )
-
-    for i in range(2):
-        logging.info(f"ESS w_{i}: {ess[i]}")
 
 
 if __name__ == "__main__":

@@ -14,9 +14,3 @@ from aisampler.logistic_regression.utils import (
 from aisampler.logistic_regression.heart import Heart
 from aisampler.logistic_regression.german import German
 from aisampler.logistic_regression.australian import Australian
-
-from aisampler.logistic_regression.statistics import (
-    statistics_german,
-    statistics_heart,
-    statistics_australian,
-)

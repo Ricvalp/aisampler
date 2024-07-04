@@ -16,7 +16,7 @@ from aisampler.logistic_regression import (
 
 
 _TASK_FILE = config_flags.DEFINE_config_file(
-    "task", default="experiments/config/train_ai_sampler_on_logistic_regression.py"
+    "task", default="experiments/config/config_train_logistic_regression.py"
 )
 
 
@@ -50,6 +50,11 @@ def main(_):
 
     samples, ar = trainer.sample(
         rng=jax.random.PRNGKey(42), n=1000, burn_in=500, parallel_chains=10
+    )
+
+    plot_logistic_regression_samples(
+        samples,
+        density,
     )
 
 

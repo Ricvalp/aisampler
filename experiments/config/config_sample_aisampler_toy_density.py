@@ -15,16 +15,15 @@ def get_config():
         "%Y%m%d-%H%M%S"
     )
 
-    cfg.target_density_name = "hamiltonian_mog2"
+    cfg.target_density_name = "hamiltonian_mog6"
 
     cfg.checkpoint = ConfigDict()
     cfg.checkpoint.checkpoint_dir = "./checkpoints"
     cfg.checkpoint.checkpoint_epoch = 50
-    cfg.checkpoint.overwrite = True
 
     cfg.d = 2
-    cfg.num_parallel_chains = 500
+    cfg.num_parallel_chains = 10
     cfg.num_iterations = 1000  # after burn-in
-    cfg.burn_in = 1000
+    cfg.burn_in = 100
 
     return cfg

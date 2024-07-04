@@ -119,4 +119,4 @@ def hmc(
     if vstack:
         return np.vstack(samples), np.array(ars).mean()
     else:
-        np.transpose(np.array(samples), (1, 0, 2)), np.array(ars).mean()
+        return np.transpose(np.array(samples), (1, 0, 2)), np.array(ars).mean()

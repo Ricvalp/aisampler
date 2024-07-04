@@ -1,15 +1,8 @@
-import pathlib
 from datetime import datetime
-from typing import Literal
-
-from absl import logging
 from ml_collections import ConfigDict
 
 
 def get_config():
-    if mode is None:
-        mode = "train"
-        logging.info(f"No mode provided, using '{mode}' as default")
 
     cfg = ConfigDict()
     cfg.seed = 42
@@ -20,9 +13,7 @@ def get_config():
     cfg.checkpoint.overwrite = True
     cfg.checkpoint.save_every = 100
 
-    cfg.dataset_name = "Australian"
-
-    cfg.hmc_sample_dir = "./hmc_samples"
+    cfg.dataset_name = "Heart"
 
     cfg.wandb = ConfigDict()
     cfg.wandb.use = False
@@ -49,10 +40,8 @@ def get_config():
     cfg.train.resampling_burn_in = 500
     cfg.train.batch_size = 4096
     cfg.train.num_epochs = 200
-    cfg.train.num_epochs_hmc_bootstrap = 300
     cfg.train.num_AR_steps = 1
     cfg.train.num_adversarial_steps = 1
-    cfg.train.bootstrap_with_hmc = True
 
     cfg.log = ConfigDict()
     cfg.log.log_every = 500
@@ -60,5 +49,16 @@ def get_config():
     cfg.log.num_parallel_chains = 2
     cfg.log.burn_in = 100
     cfg.log.samples_to_plot = 5000
+
+    cfg.hmc_bootstrapping = ConfigDict()
+    cfg.hmc_bootstrapping.use = True
+    cfg.hmc_bootstrapping.num_epochs = 300
+    cfg.hmc_bootstrapping.num_steps = 40
+    cfg.hmc_bootstrapping.step_size = 0.05
+    cfg.hmc_bootstrapping.num_parallel_chains = 50
+    cfg.hmc_bootstrapping.num_iterations = 1000
+    cfg.hmc_bootstrapping.burn_in = 1000
+    cfg.hmc_bootstrapping.initial_std = 0.1
+    cfg.hmc_bootstrapping.seed = 42
 
     return cfg
