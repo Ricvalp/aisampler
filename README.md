@@ -1,8 +1,8 @@
 # 🚀 `Ai-sampler`
 
-*Learning to sample with Adversarial Involutive Markov kernals.*
+## *Learning to sample with Adversarial Involutive Markov kernals.*
 
-Creators: [Riccardo Valperga](https://twitter.com/RValperga), [Evgenii Egorov](https://github.com/evgenii-egorov)
+Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperga](https://twitter.com/RValperga)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-390/)
