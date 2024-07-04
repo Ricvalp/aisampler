@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 
 import jax
@@ -15,7 +14,7 @@ from tqdm import tqdm
 import json
 
 import wandb
-from aisampler.discriminators import create_simple_discriminator, log_plot
+from aisampler.discriminators import create_simple_discriminator
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
 )

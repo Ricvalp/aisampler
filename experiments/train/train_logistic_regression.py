@@ -9,8 +9,6 @@ import wandb
 from aisampler.trainers import TrainerLogisticRegression
 import aisampler.logistic_regression as logistic_regression
 from aisampler.logistic_regression import (
-    plot_histograms2d_logistic_regression,
-    plot_histograms_logistic_regression,
     plot_logistic_regression_samples,
 )
 

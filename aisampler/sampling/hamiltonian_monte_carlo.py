@@ -1,9 +1,6 @@
-import time
-
 import jax
 import jax.numpy as jnp
 import numpy as np
-from absl import logging
 
 
 def leapfrog_step(x, epsilon, grad_U):
@@ -17,9 +14,8 @@ def leapfrog_step(x, epsilon, grad_U):
 
 def hmc_proposal(x, grad_potential_fn, num_steps, step_size):
     # Leapfrog integration
-    for step in range(num_steps):
-        with jax.profiler.StepTraceAnnotation(f"leapfrog_step_{step}"):
-            x = leapfrog_step(x, step_size, grad_potential_fn)
+    for _ in range(num_steps):
+        x = leapfrog_step(x, step_size, grad_potential_fn)
 
     return x
 
@@ -28,12 +24,11 @@ def hmc_kernel(
     x, key, cov_p, density, num_steps, step_size, grad_potential_fn, parallel_chains=100
 ):
     key, accept_subkey, momentum_subkey = jax.random.split(key, 3)
-    with jax.profiler.StepTraceAnnotation("hmc_proposal"):
-        x_new = hmc_proposal(x, grad_potential_fn, num_steps, step_size)
+    x_new = hmc_proposal(x, grad_potential_fn, num_steps, step_size)
 
     log_prob_new = density(x_new)
     log_prob_old = density(x)
-    log_prob_ratio = log_prob_old - log_prob_new  # log_prob_new - log_prob_old
+    log_prob_ratio = log_prob_old - log_prob_new
 
     accept = jax.random.uniform(accept_subkey, (parallel_chains,)) < jnp.exp(
         log_prob_ratio
@@ -87,7 +82,6 @@ def hmc(
         axis=1,
     )
 
-    t = time.time()
     jit_hmc_kernel(
         x,
         sampling_subkey,
