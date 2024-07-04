@@ -305,12 +305,18 @@ class TrainerLogisticRegression:
         hmc_samples_file = Path(f"./data/hmc_samples/{self.cfg.dataset_name}.npy")
 
         if os.path.exists(hmc_samples_file):
+            logging.info(
+                f"Loading HMC samples from {hmc_samples_file} for bootstrapping."
+            )
             hmc_samples = np.load(hmc_samples_file)
         else:
-            hmc_samples = sample_with_hmc(
+            logging.info("Sampling with HMC for bootstrapping.")
+            hmc_samples, ar = sample_with_hmc(
                 density=self.density, hmc_bootstrapping_cfg=self.cfg.hmc_bootstrapping
             )
+            logging.info(f"Sampling done. Acceptance rate: {ar}")
             np.save(hmc_samples_file, hmc_samples)
+            logging.info(f"Saved HMC samples to {hmc_samples_file}.")
 
         self.hmc_samples = hmc_samples
 
@@ -325,13 +331,15 @@ class TrainerLogisticRegression:
         return key, -1.0
 
     def train_epoch(self, epoch_idx):
-        if self.cfg.hmc_bootstrapping and epoch_idx == 0:
+        if self.cfg.hmc_bootstrapping.use and epoch_idx == 0:
             self.rng, ar = self.create_data_loader_with_hmc(self.rng)
         elif (
-            not self.cfg.hmc_bootstrapping
+            not self.cfg.hmc_bootstrapping.use
             or epoch_idx > self.cfg.hmc_bootstrapping.num_epochs
         ):
             self.rng, ar = self.create_data_loader(self.rng)
+            if self.wandb_log:
+                wandb.log({"acceptance rate": ar})
         else:
             ar = -1.0
 
@@ -361,8 +369,11 @@ class TrainerLogisticRegression:
         return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
 
     def train_model(self):
+
+        self.train_epoch(epoch_idx=0)  # for logging purposes
+
         for epoch in tqdm(
-            range(self.cfg.hmc_bootstrapping.num_epochs + self.cfg.train.num_epochs)
+            range(1, self.cfg.hmc_bootstrapping.num_epochs + self.cfg.train.num_epochs)
         ):
             rng, subkey = jax.random.split(self.rng)
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
@@ -371,7 +382,7 @@ class TrainerLogisticRegression:
             )
             if epoch % self.cfg.checkpoint.save_every == 0:
                 self.save_model(epoch=epoch)
-                self.sample(
+                _, ar = self.sample(
                     rng=subkey,
                     n=self.cfg.train.num_resampling_steps,
                     burn_in=self.cfg.train.resampling_burn_in,
@@ -541,8 +552,6 @@ def adversarial_loss(phi_params, D_state, L_state, batch):
 
 def sample_with_hmc(density, hmc_bootstrapping_cfg):
 
-    logging.info(f"Sampling with hmc...")
-
     hmc_density = density.new_instance(
         new_batch_size=hmc_bootstrapping_cfg.num_parallel_chains,
     )
@@ -561,6 +570,4 @@ def sample_with_hmc(density, hmc_bootstrapping_cfg):
         rng=jax.random.PRNGKey(hmc_bootstrapping_cfg.seed),
     )
 
-    logging.info(f"Sampling with hmc done. Acceptance rate: {ar}")
-
-    return samples
+    return samples, ar
