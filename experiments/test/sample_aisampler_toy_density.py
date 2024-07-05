@@ -12,7 +12,7 @@ import aisampler.toy_densities as densities
 from aisampler.discriminators import get_discriminator_function, plot_discriminator
 from aisampler.kernels import create_henon_flow, get_params_from_checkpoint, load_config
 from aisampler.sampling import (
-    metropolis_hastings_with_momentum,
+    get_sample_fn,
     plot_samples_with_density,
     plot_kde,
 )
@@ -66,9 +66,9 @@ def main(_):
         d=kernel_config.d,
     )
 
-    kernel_fn = jax.jit(lambda x: kernel.apply(kernel_params, x))
+    kernel_fn = lambda x, params: kernel.apply(params, x)
 
-    samples, ar = metropolis_hastings_with_momentum(
+    metropolis_hastings_with_momentum = get_sample_fn(
         kernel_fn,
         density,
         cov_p=jnp.eye(kernel_config.d),
@@ -76,8 +76,13 @@ def main(_):
         parallel_chains=cfg.num_parallel_chains,
         n=cfg.num_iterations,
         burn_in=cfg.burn_in,
-        rng=jax.random.PRNGKey(cfg.seed + 2),
+        starting_points=None,
         vstack=False,
+    )
+
+    samples, ar = metropolis_hastings_with_momentum(
+        params=kernel_params,
+        rng=jax.random.PRNGKey(cfg.seed),
     )
 
     ess = effective_sample_size(

@@ -21,6 +21,7 @@ except ImportError:
 from aisampler.discriminators import create_simple_discriminator
 from aisampler.sampling import (
     metropolis_hastings_with_momentum,
+    get_sample_fn,
 )
 
 from aisampler.sampling import hmc
@@ -55,6 +56,7 @@ class Trainer:
 
         self.init_model()
         self.create_train_steps()
+        self.create_sample_fn()
 
     def init_model(self):
 
@@ -114,11 +116,9 @@ class Trainer:
     def create_data_loader(self, key):
         key, subkey = jax.random.split(key)
 
-        samples, ar = self.sample(
+        samples, ar = self.sample_fn(
+            self.L_state.params,
             rng=subkey,
-            n=self.cfg.train.num_resampling_steps,
-            burn_in=self.cfg.train.resampling_burn_in,
-            parallel_chains=self.cfg.train.num_resampling_parallel_chains,
         )
 
         dataset = SamplesDataset(np.array(samples))
@@ -130,6 +130,20 @@ class Trainer:
         )
 
         return key, ar
+
+    def create_sample_fn(self):
+
+        self.sample_fn = get_sample_fn(
+            kernel_fn=lambda x, params: self.L_state.apply_fn({"params": params}, x),
+            density=self.density,
+            d=self.cfg.kernel.d,
+            n=self.cfg.train.num_resampling_steps,
+            cov_p=jnp.eye(self.cfg.kernel.d),
+            parallel_chains=self.cfg.train.num_resampling_parallel_chains,
+            burn_in=self.cfg.train.resampling_burn_in,
+            initial_std=1.0,
+            starting_points=None,
+        )
 
     def train_epoch(self, epoch_idx):
         self.rng, ar = self.create_data_loader(self.rng)
@@ -168,28 +182,10 @@ class Trainer:
     def train_model(self):
         for epoch in tqdm(range(1, self.cfg.train.num_epochs)):
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
+
             tqdm.write(
                 f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"
             )
-
-    def sample(self, rng, n, burn_in, parallel_chains):
-
-        kernel_fn = jax.jit(
-            lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x)
-        )
-
-        samples, ar = metropolis_hastings_with_momentum(
-            kernel=kernel_fn,
-            density=self.density,
-            d=self.cfg.kernel.d,
-            n=n,
-            cov_p=jnp.eye(self.cfg.kernel.d),
-            parallel_chains=parallel_chains,
-            burn_in=burn_in,
-            rng=rng,
-        )
-
-        return samples, ar
 
     def save_model(self, epoch):
         ckpt = {"L": self.L_state, "D": self.D_state}
@@ -285,12 +281,7 @@ class TrainerLogisticRegression:
     def create_data_loader(self, key):
 
         key, subkey = jax.random.split(key)
-        samples, ar = self.sample(
-            rng=subkey,
-            n=self.cfg.train.num_resampling_steps,
-            burn_in=self.cfg.train.resampling_burn_in,
-            parallel_chains=self.cfg.train.num_resampling_parallel_chains,
-        )
+        samples, ar = self.sample_fn(self.L_state.params, subkey)
 
         dataset = SamplesDataset(np.array(samples))
         self.data_loader = DataLoader(
@@ -312,6 +303,7 @@ class TrainerLogisticRegression:
                 f"Loading HMC samples from {hmc_samples_file} for bootstrapping."
             )
             hmc_samples = np.load(hmc_samples_file)
+            ar = -1.0
         else:
             logging.info("Sampling with HMC for bootstrapping.")
             hmc_samples, ar = sample_with_hmc(
@@ -331,20 +323,42 @@ class TrainerLogisticRegression:
             collate_fn=numpy_collate,
         )
 
-        return key, -1.0
+        return key, ar
 
-    def train_epoch(self, epoch_idx):
-        if self.cfg.hmc_bootstrapping.use and epoch_idx == 0:
-            self.rng, ar = self.create_data_loader_with_hmc(self.rng)
-        elif (
-            not self.cfg.hmc_bootstrapping.use
-            or epoch_idx > self.cfg.hmc_bootstrapping.num_epochs
-        ):
-            self.rng, ar = self.create_data_loader(self.rng)
-            if self.wandb_log:
-                wandb.log({"acceptance rate": ar})
-        else:
+    def create_sample_fn(self):
+
+        self.sample_fn = get_sample_fn(
+            kernel_fn=lambda x, params: self.L_state.apply_fn({"params": params}, x),
+            density=self.density,
+            d=self.density.dim,
+            n=100,
+            cov_p=jnp.eye(self.density.dim),
+            parallel_chains=self.cfg.train.num_resampling_parallel_chains,
+            burn_in=self.cfg.train.resampling_burn_in,
+            initial_std=1.0,
+            starting_points=self.hmc_samples,
+        )
+
+        self.logging_sample_fn = get_sample_fn(
+            kernel_fn=lambda x, params: self.L_state.apply_fn({"params": params}, x),
+            density=self.density,
+            d=self.density.dim,
+            n=100,
+            cov_p=jnp.eye(self.density.dim),
+            parallel_chains=self.cfg.train.num_resampling_parallel_chains,
+            burn_in=50,
+            initial_std=1.0,
+            starting_points=self.hmc_samples,
+        )
+
+    def bootstrap_with_hmc(self, epoch_idx):
+        if epoch_idx == 0:
+            self.rng, hmc_ar = self.create_data_loader_with_hmc(self.rng)
+            logging.info(f"Sampled with HMC. Acceptance rate: {hmc_ar}")
             ar = -1.0
+        else:
+            self.rng, subkey = jax.random.split(self.rng)
+            _, ar = self.logging_sample_fn(self.L_state.params, subkey)
 
         ar_losses = []
         adv_losses = []
@@ -366,6 +380,42 @@ class TrainerLogisticRegression:
                         "Epoch": epoch_idx,
                         "AR loss": ar_loss,
                         "adversarial loss": adv_loss,
+                        "acceptance rate": ar,
+                    }
+                )
+
+        return jnp.array(ar_losses).mean(), jnp.array(adv_losses).mean(), ar
+
+    def train_epoch(self, epoch_idx):
+
+        self.rng, ar = self.create_data_loader(self.rng)
+
+        if epoch_idx % self.cfg.checkpoint.save_every == 0:
+            if ar > self.best_ar:
+                self.best_ar = ar
+                self.save_model(epoch=epoch_idx)
+
+        ar_losses = []
+        adv_losses = []
+        for i, batch in enumerate(self.data_loader):
+            for _ in range(self.cfg.train.num_AR_steps):
+                self.L_state, ar_loss = self.maximize_AR_step(
+                    self.L_state, self.D_state, batch
+                )
+            ar_losses.append(ar_loss)
+            for _ in range(self.cfg.train.num_adversarial_steps):
+                self.D_state, adv_loss = self.minimize_adversarial_loss_step(
+                    self.L_state, self.D_state, batch
+                )
+            adv_losses.append(adv_loss)
+
+            if self.wandb_log:
+                wandb.log(
+                    {
+                        "Epoch": epoch_idx,
+                        "AR loss": ar_loss,
+                        "adversarial loss": adv_loss,
+                        "acceptance rate": ar,
                     }
                 )
 
@@ -373,54 +423,47 @@ class TrainerLogisticRegression:
 
     def train_model(self):
 
-        self.train_epoch(epoch_idx=0)  # for logging purposes
+        self.best_ar = -1.0
 
-        for epoch in tqdm(
-            range(1, self.cfg.hmc_bootstrapping.num_epochs + self.cfg.train.num_epochs)
-        ):
-            rng, subkey = jax.random.split(self.rng)
+        self.create_sample_fn()
+
+        if self.cfg.hmc_bootstrapping.use:
+            logging.info("Bootstrapping with HMC...")
+            for epoch in tqdm(range(0, self.cfg.hmc_bootstrapping.num_epochs)):
+                ar_loss, adv_loss, ar = self.bootstrap_with_hmc(epoch_idx=epoch)
+                tqdm.write(
+                    f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"
+                )
+
+        logging.info("Training model...")
+        for epoch in tqdm(range(0, self.cfg.train.num_epochs)):
             ar_loss, adv_loss, ar = self.train_epoch(epoch_idx=epoch)
+
             tqdm.write(
                 f"Epoch {epoch}: ar_loss={ar_loss:.4f}, adv_loss={adv_loss:.4f}, ar={ar:.4f}"
             )
-            if epoch % self.cfg.checkpoint.save_every == 0:
-                self.save_model(epoch=epoch - self.cfg.hmc_bootstrapping.num_epochs)
-                _, ar = self.sample(
-                    rng=subkey,
-                    n=self.cfg.train.num_resampling_steps,
-                    burn_in=self.cfg.train.resampling_burn_in,
-                    parallel_chains=self.cfg.train.num_resampling_parallel_chains,
-                )
-
-    def sample(self, rng, n, burn_in, parallel_chains):
-        kernel_fn = jax.jit(
-            lambda x: self.L_state.apply_fn({"params": self.L_state.params}, x)
-        )
-        samples, ar = metropolis_hastings_with_momentum(
-            kernel=kernel_fn,
-            density=self.density,
-            d=self.density.dim,
-            n=n,
-            cov_p=jnp.eye(self.density.dim),
-            parallel_chains=parallel_chains,
-            burn_in=burn_in,
-            rng=rng,
-            initial_std=1.0,
-            starting_points=self.hmc_samples,
-        )
-
-        return samples, ar
 
     def save_model(self, epoch):
-        ckpt = {"L": self.L_state, "D": self.D_state}
-        orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        save_args = orbax_utils.save_args_from_target(ckpt)
-        orbax_checkpointer.save(
-            (Path(self.checkpoint_path) / f"{epoch}").absolute(),
-            ckpt,
-            save_args=save_args,
-            force=self.cfg.checkpoint.overwrite,
-        )
+        if self.cfg.checkpoint.save_best_only:
+            ckpt = {"L": self.L_state, "D": self.D_state}
+            orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+            save_args = orbax_utils.save_args_from_target(ckpt)
+            orbax_checkpointer.save(
+                (Path(self.checkpoint_path) / "best").absolute(),
+                ckpt,
+                save_args=save_args,
+                force=self.cfg.checkpoint.overwrite,
+            )
+        else:
+            ckpt = {"L": self.L_state, "D": self.D_state}
+            orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+            save_args = orbax_utils.save_args_from_target(ckpt)
+            orbax_checkpointer.save(
+                (Path(self.checkpoint_path) / f"{epoch}").absolute(),
+                ckpt,
+                save_args=save_args,
+                force=self.cfg.checkpoint.overwrite,
+            )
 
         if epoch == 0:
             with open(os.path.join(self.checkpoint_path, "cfg.json"), "w") as f:

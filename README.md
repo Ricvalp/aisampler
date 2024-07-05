@@ -70,6 +70,18 @@ To sample from the trained `Ai-sampler` run:
 python experiments/test/sample_aisampler_logistic_regression.py --task.dataset_name=Heart --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.checkpoint_epoch=400 --task.num_parallel_chains=10 --task.num_iterations=1000 --task.burn_in=100
 ```
 
+To sample from **2D densities** with HMC ([Neal 2012](https://arxiv.org/abs/1206.1901)) run:
+
+```bash
+python experiments/test/sample_hmc_toy_density.py --task.target_density_name=hamiltonian_mog2
+```
+
+To sample with HMC from **Bayesian logistic regression posterior**, run
+
+```bash
+python experiments/test/sample_hmc_logistic_regression.py --task.dataset_name=Heart
+```
+
 
 ## Citing
 

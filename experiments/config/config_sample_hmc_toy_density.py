@@ -16,7 +16,6 @@ def get_config(mode: Literal["train", "sample"] = None):
     )
 
     cfg.target_density_name = "hamiltonian_mog6"
-    cfg.potential_function_name = "mog6"
     cfg.num_steps = 40
     cfg.step_size = 0.05
     cfg.num_iterations = 1000

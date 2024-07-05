@@ -15,7 +15,7 @@ from aisampler.logistic_regression import (
     plot_logistic_regression_samples,
 )
 from aisampler.sampling import (
-    metropolis_hastings_with_momentum,
+    get_sample_fn,
 )
 from aisampler.sampling.metrics import effective_sample_size
 
@@ -63,38 +63,42 @@ def main(_):
         d=density.dim,
     )
 
-    kernel_fn = jax.jit(lambda x: kernel.apply(kernel_params, x))
+    kernel_fn = lambda x, params: kernel.apply(params, x)
 
     logging.info(f"Sampling from {cfg.dataset_name} density...")
 
-    samples, ar = metropolis_hastings_with_momentum(
+    metropolis_hastings_with_momentum = get_sample_fn(
         kernel_fn,
         density,
-        cov_p=jnp.eye(density.dim),
         d=density.dim,
-        parallel_chains=cfg.num_parallel_chains,
         n=cfg.num_iterations,
+        cov_p=jnp.eye(density.dim),
+        parallel_chains=cfg.num_parallel_chains,
         burn_in=cfg.burn_in,
-        rng=jax.random.PRNGKey(cfg.seed),
-        starting_points=None,
         initial_std=0.1,
+        starting_points=None,
         vstack=False,
+    )
+
+    samples, ar = metropolis_hastings_with_momentum(
+        params=kernel_params,
+        rng=jax.random.PRNGKey(cfg.seed),
     )
 
     logging.info(f"Sampling done. Acceptance rate: {ar}")
 
     # Compute ESS
 
-    logging.info("Computing ESS. This may take a while...")
+    # logging.info("Computing ESS. This may take a while...")
 
-    ess = effective_sample_size(
-        samples[:, :, : density.dim],
-        np.array(density.mean()),
-        np.array(density.std()),
-    )
+    # ess = effective_sample_size(
+    #     samples[:, :, : density.dim],
+    #     np.array(density.mean()),
+    #     np.array(density.std()),
+    # )
 
-    for i in range(density.dim):
-        logging.info(f"ESS w_{i}: {ess[i]}")
+    # for i in range(density.dim):
+    #     logging.info(f"ESS w_{i}: {ess[i]}")
 
     # Plot
 

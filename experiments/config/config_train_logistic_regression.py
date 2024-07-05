@@ -11,7 +11,8 @@ def get_config():
     cfg.checkpoint = ConfigDict()
     cfg.checkpoint.checkpoint_dir = "./checkpoints"
     cfg.checkpoint.overwrite = True
-    cfg.checkpoint.save_every = 100
+    cfg.checkpoint.save_best_only = True
+    cfg.checkpoint.save_every = 1
 
     cfg.dataset_name = "Heart"
 
@@ -35,24 +36,17 @@ def get_config():
     cfg.train = ConfigDict()
     cfg.train.kernel_learning_rate = 1e-4
     cfg.train.discriminator_learning_rate = 1e-4
-    cfg.train.num_resampling_steps = 5000
-    cfg.train.num_resampling_parallel_chains = 1000
-    cfg.train.resampling_burn_in = 500
-    cfg.train.batch_size = 256
+    cfg.train.num_resampling_steps = 500
+    cfg.train.num_resampling_parallel_chains = 100
+    cfg.train.resampling_burn_in = 100
+    cfg.train.batch_size = 8192
     cfg.train.num_epochs = 200
-    cfg.train.num_AR_steps = 1
+    cfg.train.num_AR_steps = 3
     cfg.train.num_adversarial_steps = 1
-
-    cfg.log = ConfigDict()
-    cfg.log.log_every = 500
-    cfg.log.num_steps = 10000
-    cfg.log.num_parallel_chains = 2
-    cfg.log.burn_in = 100
-    cfg.log.samples_to_plot = 5000
 
     cfg.hmc_bootstrapping = ConfigDict()
     cfg.hmc_bootstrapping.use = True
-    cfg.hmc_bootstrapping.num_epochs = 300
+    cfg.hmc_bootstrapping.num_epochs = 100
     cfg.hmc_bootstrapping.num_steps = 40
     cfg.hmc_bootstrapping.step_size = 0.05
     cfg.hmc_bootstrapping.num_parallel_chains = 50

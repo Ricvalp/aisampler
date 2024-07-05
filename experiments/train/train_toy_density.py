@@ -46,8 +46,9 @@ def main(_):
 
     trainer.train_model()
 
-    samples, ar = trainer.sample(
-        rng=jax.random.PRNGKey(42), n=1000, burn_in=500, parallel_chains=10
+    samples, ar = trainer.sample_fn(
+        trainer.L_state.params,
+        jax.random.PRNGKey(42),
     )
 
     sampling.plot_samples_with_density(

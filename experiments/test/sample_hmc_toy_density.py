@@ -34,7 +34,9 @@ def main(_):
         densities, "statistics_" + cfg.target_density_name.replace("hamiltonian_", "")
     )
 
-    grad_potential_fn = getattr(densities, f"grad_{cfg.potential_function_name}")
+    grad_potential_fn = getattr(
+        densities, "grad_" + cfg.target_density_name.replace("hamiltonian_", "")
+    )
 
     samples, ar = hmc(
         density=density,
