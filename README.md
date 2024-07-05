@@ -61,7 +61,7 @@ where `num_parallel_chains` sets the number of Markov chains run in parallel, `n
 To train the `Ai-sampler` on the **Bayesian logistic regression posterior**, from the root folder run:
 
 ```bash
-python experiments/train/train_logistic_regression.py --task.dataset_name=Heart  --task.train.num_epochs=200 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.save_every=50
+python experiments/train/train_logistic_regression.py --task=experiments/config/config_train_logistic_regression.py --task.dataset_name=Heart  --task.train.num_epochs=200 --task.checkpoint.checkpoint_dir=./checkpoints --task.checkpoint.save_every=50
 ```
 
 To sample from the trained `Ai-sampler` run:

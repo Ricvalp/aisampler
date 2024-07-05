@@ -20,8 +20,8 @@ def get_config():
     cfg.checkpoint.overwrite = True
 
     cfg.d = 2
-    cfg.num_parallel_chains = 50
+    cfg.num_parallel_chains = 10
     cfg.num_iterations = 1000  # after burn-in
-    cfg.burn_in = 1000
+    cfg.burn_in = 100
 
     return cfg
