@@ -85,14 +85,16 @@ def main(_):
 
     # Compute ESS
 
-    # ess = effective_sample_size(
-    #     samples[:, :, : density.dim],
-    #     np.array(density.mean()),
-    #     np.array(density.std()),
-    # )
+    logging.info("Computing ESS. This may take a while...")
 
-    # for i in range(density.dim):
-    #     logging.info(f"ESS w_{i}: {ess[i]}")
+    ess = effective_sample_size(
+        samples[:, :, : density.dim],
+        np.array(density.mean()),
+        np.array(density.std()),
+    )
+
+    for i in range(density.dim):
+        logging.info(f"ESS w_{i}: {ess[i]}")
 
     # Plot
 
