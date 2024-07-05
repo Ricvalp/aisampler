@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aisampler"
+version = "1.0.0"
 description = "Ai-sampler: adversarial learning of Markov chains"
 authors = [{name = "Riccardo Valperga", email = "r.valperga@uva.nl"}]
 license = {text = "MIT License"}
@@ -12,9 +13,6 @@ requires-python = ">=3.10"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["aisampler*"]
-
-[tool.setuptools.dynamic]
-version = {attr = "aisampler.__version__"}
 
 [project.urls]
 homepage = "https://github.com/Ricvalp/aisampler"
