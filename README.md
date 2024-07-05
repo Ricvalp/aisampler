@@ -1,6 +1,6 @@
 # 🚀 `Ai-sampler`
 
-## *Learning to sample with Adversarial Involutive Markov kernals.*
+## *Learning to sample with Adversarial Involutive Markov kernels.*
 
 Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperga](https://twitter.com/RValperga)
 
@@ -9,11 +9,6 @@ Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperg
 [![Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
 ![Schema](assets/fig_1.png)
 
-<!-- <div style="display: flex; flex-direction: row; align-items: flex-start;">
-  <img src="assets/jumps_mog2.png" alt="Another Figure" style="width: 25%; margin-right: 10px;">
-  <img src="assets/time-reversibility.png" alt="Schema" style="width: 36%; margin-right: 10px;">
-  <img src="assets/jumps_mog6.png" alt="Another Figure" style="width: 25%; margin-right: 10px;">
-</div> -->
 
 📚 This code is for reproducing the experiments in:  [Ai-sampler: Adversarial Learning of Markov kernels with involutive maps](https://arxiv.org/abs/2406.02490) <img src="assets/arxiv.png" width=20px>.
 
