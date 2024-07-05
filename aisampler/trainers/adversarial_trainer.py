@@ -344,8 +344,7 @@ class TrainerLogisticRegression:
 
     def bootstrap_with_hmc(self, epoch_idx):
         if epoch_idx == 0:
-            self.rng, hmc_ar = self.create_data_loader_with_hmc(self.rng)
-            logging.info(f"Sampled with HMC. Acceptance rate: {hmc_ar}")
+            self.rng, _ = self.create_data_loader_with_hmc(self.rng)
             ar = -1.0
         else:
             self.rng, subkey = jax.random.split(self.rng)

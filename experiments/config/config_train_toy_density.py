@@ -44,10 +44,10 @@ def get_config():
     cfg.train.kernel_learning_rate = 1e-4
     cfg.train.discriminator_learning_rate = 1e-4
     cfg.train.num_resampling_steps = 100
-    cfg.train.num_resampling_parallel_chains = 500
+    cfg.train.num_resampling_parallel_chains = 50
     cfg.train.resampling_burn_in = 100
     cfg.train.batch_size = 4096
-    cfg.train.num_epochs = 501
+    cfg.train.num_epochs = 51
     cfg.train.num_AR_steps = 3
     cfg.train.num_adversarial_steps = 1
 
