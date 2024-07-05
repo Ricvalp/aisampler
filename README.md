@@ -21,7 +21,7 @@ Creators: [Evgenii Egorov](https://github.com/evgenii-egorov), [Riccardo Valperg
 
 ### Installation
 
-To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing the GPU-supported [Jax](https://jax.readthedocs.io/en/latest/installation.html) and CPU-only [Pytorch](https://pytorch.org/get-started/locally/).
+To ensure that JAX and PyTorch are installed with the right CUDA/cuDNN version of your platform, we recommend installing the GPU-supported [JAX](https://jax.readthedocs.io/en/latest/installation.html) and CPU-only [Pytorch](https://pytorch.org/get-started/locally/).
 
 
 To use this library, simply clone the repository, create a conda environment and install the dependencies with:
