@@ -1,3 +1,11 @@
+"""
+Note: this file defines a Metropolis-Hastings kernel with momentum for a given kernel and density. The difference
+between this file and metroplis_hastings_with_momentum.py is that in the latter, the kernel is a function of the current
+state and the parameters dictionary, while in this file, the kernel is a function of the current state only. This file is
+not used in the codebase because the metropolis hastings kernel would need to be jitted every time the parameters change.
+This file is provided because if the parameters are not changing often then the kernel implemented here is a bit faster.
+"""
+
 import time
 
 import jax
