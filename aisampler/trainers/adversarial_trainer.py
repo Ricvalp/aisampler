@@ -20,22 +20,13 @@ except ImportError:
 
 from aisampler.discriminators import create_simple_discriminator
 from aisampler.sampling import (
-    metropolis_hastings_with_momentum,
     get_sample_fn,
 )
 
 from aisampler.sampling import hmc
 
-
 from aisampler.trainers.utils import SamplesDataset, numpy_collate
 from aisampler.sampling.metrics import ess
-
-from aisampler.logistic_regression import (
-    plot_logistic_regression_samples,
-    plot_histograms_logistic_regression,
-    plot_histograms2d_logistic_regression,
-    plot_first_kernel_iteration,
-)
 
 
 class Trainer:
