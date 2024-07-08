@@ -2,8 +2,6 @@
 
 ## *Learning to sample with Adversarial Involutive Markov kernels.*
 
-Creators: [Riccardo Valperga](https://twitter.com/RValperga)
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Style](https://img.shields.io/badge/code%20style-black-000000)](https://github.com/psf/black)
@@ -81,7 +79,6 @@ To sample with HMC from **Bayesian logistic regression posterior**, run
 ```bash
 python experiments/test/sample_hmc_logistic_regression.py --task.dataset_name=Heart
 ```
-
 
 ## Citing
 
