@@ -30,8 +30,6 @@ then install the library by running
 pip install -e .
 ```
 
-**Note**: the library supports `wandb` for better logging.
-
 ### Repository structure
 
 The repository is structured as follows:
@@ -79,6 +77,8 @@ To sample with HMC from **Bayesian logistic regression posterior**, run
 ```bash
 python experiments/test/sample_hmc_logistic_regression.py --task.dataset_name=Heart
 ```
+
+**Note**: the library supports `wandb` for better logging. Simply install it and add `--task.wandb.use=True`.
 
 ## Citing
 
