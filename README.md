@@ -30,6 +30,12 @@ then install the library by running
 pip install -e .
 ```
 
+**Note**: the library supports `wandb` for better logging.
+
+### macOS
+
+For macOS change `jax[cuda12]` into `jax[cpu]` in the `requirement.txt` file.
+
 ### Repository structure
 
 The repository is structured as follows:

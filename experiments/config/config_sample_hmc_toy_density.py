@@ -6,7 +6,7 @@ from absl import logging
 from ml_collections import ConfigDict
 
 
-def get_config(mode: Literal["train", "sample"] = None):
+def get_config():
 
     cfg = ConfigDict()
     cfg.seed = 42
